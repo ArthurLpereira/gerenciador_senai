@@ -26,9 +26,13 @@
                     <i class="bi bi-lock-fill"></i>
                     <input type="password" placeholder="Senha" name="senha_colaborador" id="senha_colaborador" required>
                 </div>
+                <div class="conect">
+                    <button> <i class="bi bi-google"></i> Entrar com o Google</button>
+                    <button><i class="bi bi-windows"></i> Entrar com a Microsoft</button>
+                </div>
                 <div style="display: flex; justify-content: space-between; width: 100%;">
                     <a href="#">Esqueceu sua senha?</a>
-                    <a href="#" id="abrirModalCadastro" style="cursor: pointer;">Cadastre-se</a>
+                    <a href="./cadastro.php" id="abrirModalCadastro" style="cursor: pointer;">Cadastre-se</a>
                 </div>
             </div>
             <div class="enviar-login">

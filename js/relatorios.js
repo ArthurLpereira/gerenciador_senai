@@ -1,5 +1,5 @@
 // CONTEÚDO COMPLETO DO ARQUIVO relatorios.js
-const apiBase = 'http://127.0.0.1:8000/api/';
+const apiBase = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api/';
 
 async function atualizarCardAmbientes() {
     const elementoNumero = document.getElementById('ambientes-disponiveis-numero');
@@ -41,11 +41,6 @@ async function atualizarTaxaOcupacao() {
         elementoTaxa.textContent = 'Erro';
     }
 }
-// Adicione esta NOVA função ao seu arquivo relatorios.js
-//
-// === FUNÇÃO DE COLABORADORES CORRIGIDA ===
-// Substitua a função antiga por esta.
-//
 
 async function atualizarColaboradoresAtivos() {
     const elementoColaboradores = document.getElementById('colaboradores-ativos-valor');
@@ -164,7 +159,6 @@ async function criarGraficoOcupacaoPorTipo() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Chamamos as DUAS funções para atualizar os dois cards
     atualizarCardAmbientes();
     atualizarTaxaOcupacao();
     atualizarColaboradoresAtivos();

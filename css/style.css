@@ -4,10 +4,12 @@
     margin: 0;
 }
 html{
+    width: 100vw;
     height: 100vh;
 }
 body{
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background-image: url(../images/fundo.png);
     background-position: center;
     background-position: no-repeat;
@@ -17,7 +19,7 @@ body{
     align-items: center;
 }
 .main-login{
-    height: 522px;
+    height: 78%;
     width: 752px;
     border: 4px solid white;
     display: flex;
@@ -27,6 +29,7 @@ body{
     color: white;
     border-radius: 20px;
     gap: 30px;
+    position: fixed;
 }
 .titulo-login{
     font-family: "Montserrat";
@@ -128,9 +131,26 @@ body{
     background-color: #9A1915;
     transform: scale(1.02);
 }
-header{
+.conect{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
-    height: 5%;
-    background-color: #9A1915;
 }
-
+.conect button{
+    width: 45%;
+    height: 40px;
+    margin-top: 20px;
+    border-radius: 30px;
+    border: none;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.conect i{
+    font-size: 20px;
+}

@@ -80,9 +80,6 @@
                 </div>
                 <h2 id="user-name">Carregando...</h2>
                 <p id="user-email-display">...</p> <!-- Alterado ID para evitar conflito -->
-                <a class="ativar" id="user-status" href="#">
-                    <i class="bi bi-power"></i> <span>...</span>
-                </a>
             </div>
 
             <div class="informacoes">
@@ -94,12 +91,6 @@
                     <p><strong>Cor:</strong> <span id="user-color">...</span></p>
                     <p><strong>Data de Cadastro:</strong> <span id="user-created">...</span></p>
                 </div>
-                <div class="perfil-select-container">
-                    <label for="perfil"><strong>Perfil de Acesso:</strong></label>
-                    <select name="perfil" id="perfil-select">
-                        <option>Carregando perfis...</option>
-                    </select>
-                </div>
             </div>
         </div>
     </main>
@@ -109,7 +100,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURAÇÕES GLOBAIS ---
-            const API_URL = 'http://10.188.35.86:8024/arthur-pereira/api_sga/api';
+            const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
             const TOKEN = localStorage.getItem('authToken');
 
             // --- PROTEÇÃO DE PÁGINA ---

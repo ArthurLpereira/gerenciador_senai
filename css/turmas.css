@@ -194,18 +194,10 @@ main.push {
     color: #8C8C8C;
     font-weight: 700;
 }
-
-.docentes h2 {
-    margin-bottom: 0;
+.docentes h2{
+    border-bottom: 4px solid #8C8C8C;
+    width: 20%;
 }
-
-.docentes hr {
-    border: none;
-    border-top: 4px solid #000000;
-    width: 30%;
-    border-radius: 10px;
-}
-
 .sub_titulos {
     width: 97%;
     height: 80px;
@@ -330,6 +322,7 @@ main.push {
     justify-content: center;
     align-items: center;
     gap: 10px;
+    background-color: #007BFF;
     transition: background-color 0.3s ease;
 }
 
@@ -448,7 +441,7 @@ main.push {
     position: absolute;
     top: 15px;
     right: 25px;
-    color: #999;
+    color: #c42a2a;
     font-size: 32px;
     font-weight: bold;
     cursor: pointer;
@@ -457,7 +450,7 @@ main.push {
 }
 
 .close:hover {
-    color: #333;
+    color: #6a2c2c;
 }
 
 .header-container {
@@ -512,10 +505,28 @@ main.push {
     margin-bottom: 8px;
     font-size: 14px;
 }
-
+.btn-criar {
+    height: 50px;
+    width: 20%;
+    border-radius: 10px;
+    border: none;
+    background-color: #E30613;
+    color: white;
+    font-size: 20px;
+}
+.btn-salvar{
+    height: 50px;
+    width: 30%;
+    border-radius: 10px;
+    border: none;
+    background-color: #E30613;
+    color: white;
+    font-size: 20px;
+}
 .form-group input[type="text"],
 .form-group input[type="date"],
 .form-group input[type="time"],
+.form-group input[type="number"],
 .form-group select {
     width: 100%;
     padding: 12px;

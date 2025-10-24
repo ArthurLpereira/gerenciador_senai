@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const API_URL = 'http://127.0.0.1:8000/api';
+    const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
 
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
                 case 2:
                     // Altere 'instrutor_home.html' para a sua página de instrutor
-                    window.location.href = 'gerenciar.php';
+                    window.location.href = 'adm_turma.php';
                     break;
                 case 3:
                     // Altere 'coordenador_area.html' para a sua página de coordenador

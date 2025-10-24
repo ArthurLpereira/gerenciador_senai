@@ -68,7 +68,6 @@
         </section>
         <div class="docentes">
             <h2>Turmas</h2>
-            <hr>
         </div>
         <div class="sub_titulos">
             <div class="adiconar">
@@ -88,7 +87,6 @@
         <div class="modal-content">
             <span class="close" data-modal-id="modalCriar"><i class="bi bi-x-circle"></i></span>
             <h2>Criar Turma</h2>
-            <hr>
             <form id="formCriar">
                 <div class="form-body">
                     <div class="form-column">
@@ -128,7 +126,6 @@
         <div class="modal-content">
             <span class="close" data-modal-id="modalEditar"><i class="bi bi-x-circle"></i></span>
             <h2>Editar Turma</h2>
-            <hr>
             <form id="formEditar">
                 <input type="hidden" id="edit_turma_id">
                 <div class="form-body">
@@ -169,7 +166,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURAÇÕES GLOBAIS ---
-            const API_URL = 'http://10.188.35.86:8024/arthur-pereira/api_sga/api';
+            const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
             const TOKEN = localStorage.getItem('authToken');
 
             // --- PROTEÇÃO DE PÁGINA ---
