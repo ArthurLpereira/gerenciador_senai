@@ -40,22 +40,11 @@
             </div>
 
             <div class="opcoes-menu" id="abrir-modal-relatorio">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="1"></circle>
                     <circle cx="19" cy="12" r="1"></circle>
                     <circle cx="5" cy="12" r="1"></circle>
                 </svg>
-            </div>
-        </section>
-
-        <section class="cabecalho-principal">
-            <div class="titulo">
-                <img src="./images/time.png" alt="Ícone de Relógio">
-                <h3>Carga Horária por Docente</h3>
-            </div>
-            <div class="barra-pesquisa">
-                <input type="text" id="input-pesquisa" placeholder="Pesquise o nome do docente...">
-                <button><img style="width: 30px;" src="./images/pesquisar.png" alt=""></button>
             </div>
         </section>
 
@@ -93,34 +82,67 @@
             </div>
         </section>
 
-        <section class="tabela-docentes" id="secao-tabela-docentes">
-            <div class="header-tabela">
-                <div class="coluna-nome">Nome do Docente</div>
-                <div class="coluna-carga">Carga Horária</div>
-            </div>
-            <div class="corpo-tabela" id="tabela-docentes">
-                <div class="linha-tabela">
-                    <div class="coluna-nome">Marcos Reis</div>
-                    <div class="coluna-carga">40</div>
-                </div>
-                <div class="linha-tabela">
-                    <div class="coluna-nome">Marcos Antonio</div>
-                    <div class="coluna-carga">35</div>
-                </div>
-                <div class="linha-tabela">
-                    <div class="coluna-nome">Ana Clara</div>
-                    <div class="coluna-carga">38</div>
-                </div>
-                <div class="linha-tabela">
-                    <div class="coluna-nome">Beatriz Costa</div>
-                    <div class="coluna-carga">40</div>
-                </div>
-            </div>
-        </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="./js/relatorios.js"></script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const abrirModalBtn = document.getElementById('abrir-modal-relatorio');
+
+            abrirModalBtn.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'Gerar Relatórios',
+                    html: `
+                <div class="modal-opcoes-container">
+                    <a href="relatorios.php?export=pdf" id="btn-gerar-pdf" class="modal-opcao-btn modal-btn-pdf">
+                        <img src="./images/pdf.png" alt="Ícone PDF" style="width: 50px; height: auto; margin-bottom: 5px;">
+                        <span>PDF</span>
+                    </a>
+                    <a href="relatorios.php?export=xls" id="btn-gerar-xls" class="modal-opcao-btn modal-btn-xls">
+                        <img src="./images/file.png" alt="Ícone XLS" style="width: 45px; height: auto; margin-bottom: 5px;">
+                        <span>XLS</span>
+                    </a>
+                </div>
+            `,
+                    showConfirmButton: false,
+                    showCancelButton: false,
+                    showCloseButton: true,
+                    width: '450px',
+                    customClass: {
+                        popup: 'modal-relatorios-custom'
+                    },
+                    didOpen: () => {
+                        const btnPdf = document.getElementById('btn-gerar-pdf');
+                        const btnXls = document.getElementById('btn-gerar-xls');
+
+                        btnPdf.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            const url = 'http://127.0.0.1:8000/api/gerar-pdf';
+
+                            // *** MUDANÇA AQUI ***
+                            // Abre a URL em uma nova guia (o seu "_blank")
+                            window.open(url, '_blank');
+
+                            // Fecha o modal de opções
+                            Swal.close();
+                        });
+
+                        btnXls.addEventListener('click', function(event) {
+                            event.preventDefault();
+                            const url = 'http://127.0.0.1:8000/api/gerar-csv';
+
+                            // Ação direta (na mesma aba, forçando o download)
+                            window.location.href = url;
+                            // Fecha o modal de opções
+                            Swal.close();
+                        });
+                    }
+                });
+            });
+
+        });
+    </script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 // CONTEÚDO COMPLETO DO ARQUIVO relatorios.js
-const apiBase = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api/';
+const apiBase = 'http://127.0.0.1:8000/api/';
 
 async function atualizarCardAmbientes() {
     const elementoNumero = document.getElementById('ambientes-disponiveis-numero');

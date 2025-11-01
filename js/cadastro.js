@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- CONFIGURAÇÕES GLOBAIS ---
-    const baseUrl = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
+    const baseUrl = 'http://127.0.0.1:8000/api';
 
     // --- SELETORES DE ELEMENTOS ---
     const formCadastro = document.getElementById('formCadastro');
@@ -43,9 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // CORRIGIDO: Alterado de "password" para "senha_colaborador"
             senha_colaborador: document.getElementById('senha').value,
-
-            // CORRIGIDO: Alterado de "password_confirmation" para "senha_colaborador_confirmation"
-            senha_colaborador_confirmation: document.getElementById('senha_confirmar').value
         };
 
         // =========================================================

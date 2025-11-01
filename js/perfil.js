@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURAÇÕES GLOBAIS ---
-    const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
+    const API_URL = 'http://127.0.0.1:8000/api';
     const TOKEN = localStorage.getItem('authToken');
     const USER_STRING = localStorage.getItem('user');
 
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataCadastro = new Date(usuarioAtualizado.created_at);
         document.getElementById('user-created').textContent = dataCadastro.toLocaleDateString('pt-BR');
     }
-    
+
     async function carregarDadosDoPerfil() {
         try {
             const response = await fetch(`${API_URL}/colaboradores/${user.id}`, { headers: AUTH_HEADERS });

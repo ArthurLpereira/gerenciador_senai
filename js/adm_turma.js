@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- CONFIGURAÇÕES GLOBAIS ---
-    const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
+    const API_URL = 'http://127.0.0.1:8000/api';
     const TOKEN = localStorage.getItem('authToken');
 
     if (!TOKEN) {
@@ -38,27 +38,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNÇÕES DE LÓGICA PRINCIPAL ---
 
     function criarCardTurma(turma) {
-        // ... (código da função criarCardTurma igual ao anterior)
+        // Seus dados existentes
         const statusText = turma.status_turma?.nome_status_turma ?? 'Indefinido';
         const cursoNome = turma.curso?.nome_curso ?? 'N/A';
         const ambienteNome = turma.ambiente?.nome_ambiente ?? 'N/A';
         const dataFormatadaInicio = new Date(turma.data_inicio_turma + 'T00:00:00').toLocaleDateString('pt-BR');
         const dataFormatadaTermino = new Date(turma.data_termino_turma + 'T00:00:00').toLocaleDateString('pt-BR');
 
+        // --- Início da nova lógica ---
+        let diasDaSemanaTexto = 'Dias não definidos'; // Texto padrão
+
+        // O JSON confirma que 'turma.dias_da_semana' é o array correto
+        if (turma.dias_da_semana && turma.dias_da_semana.length > 0) {
+
+            // O JSON confirma que 'dia.nome_dia_da_semana' é a propriedade correta
+            diasDaSemanaTexto = turma.dias_da_semana
+                .map(dia => dia.nome_dia_da_semana)
+                .join(', ');
+        }
+        // --- Fim da nova lógica ---
+
+        // HTML do card com a nova linha
         return `
-            <div class="info_docente" data-id="${turma.id}">
-                <div class="conteudo">
-                    <p class="nome"><b>Turma: </b> ${turma.nome_turma} (${cursoNome})</p>
-                    <p><i class="bi bi-calendar-event"></i> Início: ${dataFormatadaInicio}</p>
-                    <p><i class="bi bi-calendar-event-fill"></i> Término: ${dataFormatadaTermino}</p>
-                    <p><i class="bi bi-geo-alt-fill"></i> Ambiente: ${ambienteNome}</p>
-                    <p><i class="bi bi-person-check-fill"></i> Status: ${statusText}</p>
-                </div>
-                <div class="funcoes">
-                    <button class="editar_docente" data-id="${turma.id}"><i class="bi bi-pen-fill"></i> Editar</button>
-                </div>
+        <div class="info_docente" data-id="${turma.id}">
+            <div class="conteudo">
+                <p class="nome"><b>Turma: </b> ${turma.nome_turma} (${cursoNome})</p>
+                <p><i class="bi bi-calendar-event"></i> Início: ${dataFormatadaInicio}</p>
+                <p><i class="bi bi-calendar-event-fill"></i> Término: ${dataFormatadaTermino}</p>
+                <p><i class="bi bi-geo-alt-fill"></i> Ambiente: ${ambienteNome}</p>
+                
+                <p><i class="bi bi-calendar-week-fill"></i> Dias: ${diasDaSemanaTexto}</p> 
+
+                <p><i class="bi bi-person-check-fill"></i> Status: ${statusText}</p>
             </div>
-        `;
+            <div class="funcoes">
+                <button class="editar_docente" data-id="${turma.id}"><i class="bi bi-pen-fill"></i> Editar</button>
+            </div>
+        </div>
+    `;
     }
 
     async function carregarTurmas() {
