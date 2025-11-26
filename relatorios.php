@@ -118,7 +118,7 @@
 
                         btnPdf.addEventListener('click', function(event) {
                             event.preventDefault();
-                            const url = 'http://127.0.0.1:8000/api/gerar-pdf';
+                            const url = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api/gerar-pdf';
 
                             // *** MUDANÇA AQUI ***
                             // Abre a URL em uma nova guia (o seu "_blank")
@@ -130,7 +130,7 @@
 
                         btnXls.addEventListener('click', function(event) {
                             event.preventDefault();
-                            const url = 'http://127.0.0.1:8000/api/gerar-csv';
+                            const url = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api/gerar-csv';
 
                             // Ação direta (na mesma aba, forçando o download)
                             window.location.href = url;

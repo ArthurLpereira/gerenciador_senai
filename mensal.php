@@ -65,6 +65,17 @@
             margin-top: 20px !important;
             margin-bottom: 0 !important;
         }
+
+        /* Classe CSS para estilizar a célula de feriado (igual ao domingo se quiser) */
+        .dia-nao-letivo {
+            background-color: #f0f0f0;
+            /* Cinza claro ou use #ffcccc para vermelho claro */
+            color: #d33;
+            text-align: center;
+            vertical-align: middle;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 
@@ -154,7 +165,7 @@
         document.addEventListener('DOMContentLoaded', function() {
 
             // --- CONFIGURAÇÕES GLOBAIS DA API ---
-            const API_URL = 'http://127.0.0.1:8000/api';
+            const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
             const TOKEN = localStorage.getItem('authToken');
 
             if (!TOKEN) {
@@ -182,7 +193,7 @@
             // --- ESTADO DO CALENDÁRIO ---
             let dataAtual = new Date(); // Guarda a data atual do calendário
 
-            // --- FUNÇÕES AUXILIARES (REUTILIZADAS DO SEMANAL) ---
+            // --- FUNÇÕES AUXILIARES ---
 
             function formatarDataParaAPI(data) {
                 const ano = data.getFullYear();
@@ -247,13 +258,8 @@
                 return temAgendamento ? html : '';
             }
 
-            // --- LÓGICA PRINCIPAL DO CALENDÁRIO MENSAL (MODIFICADA) ---
+            // --- LÓGICA PRINCIPAL DO CALENDÁRIO MENSAL ---
 
-            /**
-             * [MODIFICADO]
-             * Função principal que busca dados e desenha o calendário na tela.
-             * Agora é 'async' e consome a API /api/turmas/mensal
-             */
             async function gerarCalendario(dataBase) {
                 if (!titleElement || !headerDaysRow || !calendarBody) return;
 
@@ -262,9 +268,9 @@
                 const mesParaApi = mes + 1; // 1-12
 
                 // Feedback de carregamento
-                calendarBody.innerHTML = '<tr><td colspan="32">Carregando dados da API...</td></tr>'; // Colspan 32 (31 dias + 1 amb)
+                calendarBody.innerHTML = '<tr><td colspan="32">Carregando dados da API...</td></tr>';
 
-                // 1. Buscar os DADOS COMPLETOS (Ambientes + Agendamentos)
+                // 1. Buscar os DADOS COMPLETOS
                 let data;
                 try {
                     const response = await fetch(`${API_URL}/turmas/mensal?ano=${ano}&mes=${mesParaApi}`, {
@@ -308,14 +314,12 @@
                     const diaSemanaNome = diasDaSemanaNomes[diaCorrente.getDay()];
 
                     const th = document.createElement('th');
-                    // Armazena a data YYYY-MM-DD para o modal "Ver Mais"
                     th.dataset.dataApi = formatarDataParaAPI(diaCorrente);
-
                     th.innerHTML = `${String(dia).padStart(2, '0')}/${String(mesParaApi).padStart(2, '0')} (${diaSemanaNome})`;
                     headerDaysRow.appendChild(th);
                 }
 
-                // 6. Gerar as linhas (Ambientes) e preencher as células (Agendamentos)
+                // 6. Gerar as linhas e preencher as células
                 listaDeAmbientes.forEach(ambiente => {
                     const tr = document.createElement('tr');
                     const thAmbiente = document.createElement('th');
@@ -326,21 +330,36 @@
                     for (let dia = 1; dia <= diasNoMes; dia++) {
                         const diaCorrente = new Date(ano, mes, dia);
                         const diaDaSemanaNum = diaCorrente.getDay(); // 0 = Domingo
-                        const dataString = formatarDataParaAPI(diaCorrente); // "YYYY-MM-DD"
+                        const dataString = formatarDataParaAPI(diaCorrente); // YYYY-MM-DD
 
                         const td = document.createElement('td');
 
-                        // Pega os agendamentos para ESTE dia
+                        // Pega TODOS os eventos do dia
                         const sessoesDoDia = agendamentos[dataString] || [];
-                        // Filtra os agendamentos APENAS para o ambiente desta linha
+
+                        // -------------------------------------------------------------------------
+                        // [NOVA LOGICA AQUI] Verifica se tem algum evento "nao_letivo"
+                        // -------------------------------------------------------------------------
+                        const eventoFeriado = sessoesDoDia.find(s => s.tipo_evento === 'nao_letivo');
+
+                        // Filtra as turmas normais para este ambiente
                         const sessoesDaCelula = sessoesDoDia.filter(s => s.ambiente_id === ambiente.id);
 
-                        if (diaDaSemanaNum === 0) { // Domingo
+                        if (diaDaSemanaNum === 0) { // Prioridade 1: Domingo
                             td.className = 'dia-nao-letivo';
-                            td.textContent = 'Dia Não Letivo';
-                        } else {
+                            td.textContent = 'Domingo';
+
+                        } else if (eventoFeriado) { // Prioridade 2: FERIADO (vinda do Back-end)
+                            td.className = 'dia-nao-letivo';
+                            // Usa o título que veio do PHP (ex: "Dia não letivo")
+                            td.textContent = eventoFeriado.titulo || 'Dia não letivo';
+                            // Coloca a descrição (ex: "Feriado Municipal") como tooltip
+                            td.title = eventoFeriado.descricao || '';
+
+                        } else { // Prioridade 3: Aulas normais
                             td.innerHTML = criarSlotsAgendamento(sessoesDaCelula);
                         }
+
                         tr.appendChild(td);
                     }
                     calendarBody.appendChild(tr);
@@ -351,7 +370,7 @@
             }
 
 
-            // --- FUNÇÕES DE INTERAÇÃO (REUTILIZADAS DO SEMANAL) ---
+            // --- FUNÇÕES DE INTERAÇÃO ---
 
             function buildDynamicModalHtml(turmasDoDia) {
                 if (turmasDoDia.length === 0) {
@@ -435,14 +454,14 @@
                 });
             }
 
-            // --- LÓGICA DE INTERAÇÃO ORIGINAL (COM MODIFICAÇÕES) ---
+            // --- LÓGICA DE INTERAÇÃO ORIGINAL ---
 
             const viewToggle = document.getElementById('view-toggle');
             if (viewToggle) {
-                viewToggle.checked = false; // Começa desmarcado (estamos no mensal)
+                viewToggle.checked = false;
                 viewToggle.addEventListener('change', function() {
                     if (this.checked) {
-                        window.location.href = 'semanal.php'; // Vai para o semanal
+                        window.location.href = 'semanal.php';
                     }
                 });
             }
@@ -482,28 +501,26 @@
 
             const manageDaysBtn = document.querySelector('.manage-days-btn');
             if (manageDaysBtn) {
-                // (Lógica original do modal "Gerenciar Dias Letivos")
                 manageDaysBtn.addEventListener('click', () => {
                     Swal.fire({
                         title: 'Gerenciar Dias Letivos',
                         html: `... (Seu formulário HTML estático aqui) ...`,
-                        // ... (Sua configuração original do Swal)
                     });
                 });
             }
 
-            // --- LISTENERS DOS BOTÕES DE NAVEGAÇÃO (MODIFICADOS) ---
+            // --- LISTENERS DOS BOTÕES DE NAVEGAÇÃO ---
             if (prevMonthBtn) {
                 prevMonthBtn.addEventListener('click', () => {
-                    dataAtual.setMonth(dataAtual.getMonth() - 1); // Volta 1 mês
-                    gerarCalendario(dataAtual); // Redesenha o calendário com a nova data
+                    dataAtual.setMonth(dataAtual.getMonth() - 1);
+                    gerarCalendario(dataAtual);
                 });
             }
 
             if (nextMonthBtn) {
                 nextMonthBtn.addEventListener('click', () => {
-                    dataAtual.setMonth(dataAtual.getMonth() + 1); // Avança 1 mês
-                    gerarCalendario(dataAtual); // Redesenha o calendário com a nova data
+                    dataAtual.setMonth(dataAtual.getMonth() + 1);
+                    gerarCalendario(dataAtual);
                 });
             }
 

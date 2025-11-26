@@ -85,7 +85,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURAÇÕES GLOBAIS ---
-            const API_URL = 'http://127.0.0.1:8000/api';
+            const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
 
             const TOKEN = localStorage.getItem('authToken');
             const USER_STRING = localStorage.getItem('user');

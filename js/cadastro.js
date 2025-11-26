@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- CONFIGURAÇÕES GLOBAIS ---
-    const baseUrl = 'http://127.0.0.1:8000/api';
+    const baseUrl = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
 
     // --- SELETORES DE ELEMENTOS ---
     const formCadastro = document.getElementById('formCadastro');

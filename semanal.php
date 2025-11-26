@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
 
     <style>
+        /* --- ESTILOS GERAIS DO MODAL --- */
         .info-modal-turma-section {
             text-align: left;
             margin-bottom: 15px;
@@ -38,6 +39,24 @@
             overflow-y: auto;
             margin-top: 20px !important;
             margin-bottom: 0 !important;
+        }
+
+        /* ================================================================
+           ESTILO DOS DIAS NÃO LETIVOS (VERMELHO)
+           ================================================================
+           Isso fará o fundo ficar vermelho claro e o texto vermelho escuro
+        */
+        .dia-nao-letivo {
+            background-color: #ffebee;
+            /* Vermelho bem clarinho */
+            color: #d32f2f;
+            /* Vermelho escuro (padrão Senai/Erro) */
+            text-align: center;
+            vertical-align: middle;
+            font-weight: bold;
+            font-size: 0.95em;
+            border: 1px solid #ffcdd2;
+            /* Borda vermelha sutil */
         }
     </style>
 </head>
@@ -101,8 +120,10 @@
         <div class="calendar-container">
             <div class="calendar-header">
                 <h2 id="week-range-title">Carregando...</h2>
-                <button class="nav-arrow" id="prev-week-btn">&lt;</button>
-                <button class="nav-arrow" id="next-week-btn">&gt;</button>
+                <div class="nav-buttons">
+                    <button class="nav-arrow" id="prev-week-btn">&lt;</button>
+                    <button class="nav-arrow" id="next-week-btn">&gt;</button>
+                </div>
             </div>
             <table class="calendar-grid">
                 <thead>
@@ -112,7 +133,7 @@
                 </thead>
                 <tbody id="calendar-body">
                     <tr>
-                        <td>Carregando dados...</td>
+                        <td colspan="8">Carregando dados...</td>
                     </tr>
                 </tbody>
             </table>
@@ -120,6 +141,7 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="./js/semanal.js"></script>
 </body>
 

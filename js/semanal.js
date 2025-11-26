@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     // --- CONFIGURAÇÕES GLOBAIS DA API ---
-    const API_URL = 'http://127.0.0.1:8000/api';
+    const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
     const TOKEN = localStorage.getItem('authToken');
 
     if (!TOKEN) {
@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         headerDaysRow.innerHTML = '<th>Ambientes</th>';
         calendarBody.innerHTML = '';
 
+        // Título do Mês/Ano
         const formatadorTitulo = {
             month: 'long',
             year: 'numeric'
@@ -134,11 +135,13 @@ document.addEventListener('DOMContentLoaded', function () {
         nomeMes = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
         titleElement.textContent = nomeMes;
 
+        // Configura dias da semana
         const inicioSemana = new Date(dataBase);
-        inicioSemana.setDate(dataBase.getDate() - dataBase.getDay());
+        inicioSemana.setDate(dataBase.getDate() - dataBase.getDay()); // Volta para domingo
         const diasDaSemanaNomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
         const diasDaSemana = [];
 
+        // Monta o cabeçalho (dias)
         for (let i = 0; i < 7; i++) {
             const diaCorrente = new Date(inicioSemana);
             diaCorrente.setDate(inicioSemana.getDate() + i);
@@ -150,6 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
             headerDaysRow.appendChild(th);
         }
 
+        // Monta as linhas (Ambientes)
         listaDeAmbientes.forEach(ambiente => {
             const tr = document.createElement('tr');
             const thAmbiente = document.createElement('th');
@@ -162,15 +166,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 const diaDaSemanaNum = dia.getDay();
                 const dataString = formatarDataParaAPI(dia);
 
+                // Pega TODOS os eventos do dia
                 const sessoesDoDia = agendamentos[dataString] || [];
+
+                // =========================================================
+                // [LÓGICA CORRIGIDA] Verifica Feriado / Dia Não Letivo
+                // =========================================================
+                // 1. Procura se existe feriado/dia não letivo vindo do banco
+                const eventoFeriado = sessoesDoDia.find(s => s.tipo_evento === 'nao_letivo');
+
+                // 2. Filtra as aulas normais para este ambiente
                 const sessoesDaCelula = sessoesDoDia.filter(s => s.ambiente_id === ambiente.id);
 
+                // --- DECISÃO DE EXIBIÇÃO ---
                 if (diaDaSemanaNum === 0) {
+                    // Prioridade 1: Domingo
                     td.className = 'dia-nao-letivo';
-                    td.textContent = 'Dia Não Letivo';
+                    td.textContent = 'Domingo';
+
+                } else if (eventoFeriado) {
+                    // Prioridade 2: Feriado do Banco
+                    td.className = 'dia-nao-letivo';
+                    // Exibe o título vindo do banco (ex: "Dia não letivo")
+                    td.textContent = eventoFeriado.titulo || 'Dia não letivo';
+                    // Tooltip com a descrição
+                    td.title = eventoFeriado.descricao || '';
+
                 } else {
+                    // Prioridade 3: Aulas Normais
                     td.innerHTML = criarSlotsAgendamento(sessoesDaCelula);
                 }
+
                 tr.appendChild(td);
             });
 
@@ -180,13 +206,103 @@ document.addEventListener('DOMContentLoaded', function () {
         adicionarListenersVerMais();
     }
 
-    // --- LÓGICA DE INTERAÇÃO (Botões, Modais, etc.) ---
-    // (Nenhuma alteração nesta seção)
+    // --- FUNÇÕES DO MODAL "VER MAIS" ---
+
+    function buildDynamicModalHtml(turmasDoDia) {
+        if (turmasDoDia.length === 0) {
+            return '<p>Nenhuma turma encontrada para este dia.</p>';
+        }
+
+        let html = '';
+        turmasDoDia.forEach(turma => {
+            const nomeTurma = turma.nome_turma ?? 'N/A';
+            const nomeCurso = turma.curso?.nome_curso ?? 'N/A';
+            const nomeAmbiente = turma.ambiente?.nome_ambiente ?? 'N/A';
+            const nomeTurno = turma.turno?.nome_turno ?? 'N/A';
+
+            let nomesDocentes = 'Nenhum docente alocado';
+            if (turma.colaboradores && turma.colaboradores.length > 0) {
+                nomesDocentes = turma.colaboradores.map(c => c.nome_colaborador).join(', ');
+            }
+
+            const dataInicio = new Date(turma.data_inicio_turma + 'T00:00:00').toLocaleDateString('pt-BR');
+
+            html += `
+                <div class="info-modal-turma-section">
+                    <h4>${nomeTurma} (${nomeTurno})</h4>
+                    <p><b>Curso:</b> ${nomeCurso}</p>
+                    <p><b>Ambiente:</b> ${nomeAmbiente}</p>
+                    <p><b>Docente(s):</b> ${nomesDocentes}</p>
+                    <p><b>Início da Turma:</b> ${dataInicio}</p>
+                </div>
+            `;
+        });
+
+        return html;
+    }
+
+    function adicionarListenersVerMais() {
+        const verMaisBotoes = document.querySelectorAll('.ver-mais-btn');
+
+        verMaisBotoes.forEach(botao => {
+            botao.addEventListener('click', async (event) => {
+                const cell = event.target.closest('td');
+                const cellIndex = cell.cellIndex;
+                const headerCell = headerDaysRow.querySelectorAll('th')[cellIndex];
+                const dataParaApi = headerCell.dataset.dataApi;
+                const dataTitulo = headerCell.textContent;
+
+                Swal.fire({
+                    title: `Detalhes do Dia: ${dataTitulo}`,
+                    html: 'Buscando informações...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    const response = await fetch(`${API_URL}/turmas/diario?data=${dataParaApi}`, {
+                        headers: AUTH_HEADERS
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Falha ao buscar detalhes: ${response.statusText}`);
+                    }
+
+                    const turmasDoDia = await response.json();
+                    const modalHtml = buildDynamicModalHtml(turmasDoDia);
+
+                    Swal.update({
+                        html: modalHtml,
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        customClass: {
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title',
+                            closeButton: 'custom-swal-close-button',
+                            htmlContainer: 'custom-swal-html-container'
+                        }
+                    });
+                    Swal.hideLoading();
+
+                } catch (error) {
+                    console.error(error);
+                    Swal.hideLoading();
+                    Swal.fire('Erro', error.message, 'error');
+                }
+            });
+        });
+    }
+
+    // --- INTERAÇÕES (Menu, Logout, Toggle) ---
 
     const viewToggle = document.getElementById('view-toggle');
     if (viewToggle) {
+        // Marca como "Semanal" (checked)
         viewToggle.checked = true;
         viewToggle.addEventListener('change', function () {
+            // Se desmarcar, volta para mensal
             if (!this.checked) {
                 window.location.href = 'mensal.php';
             }
@@ -234,135 +350,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 html: `... (seu HTML de formulário aqui) ...`,
                 showCancelButton: true,
                 confirmButtonText: 'Salvar Alterações',
-                // ... (resto da sua configuração original) ...
             });
         });
     }
 
-
-    // ====================================================================
-    // == FUNÇÕES DO MODAL "VER MAIS" (COM A CORREÇÃO DO LOADING)
-    // ====================================================================
-
-    function buildDynamicModalHtml(turmasDoDia) {
-        if (turmasDoDia.length === 0) {
-            return '<p>Nenhuma turma encontrada para este dia.</p>';
-        }
-
-        let html = '';
-        turmasDoDia.forEach(turma => {
-            const nomeTurma = turma.nome_turma ?? 'N/A';
-            const nomeCurso = turma.curso?.nome_curso ?? 'N/A';
-            const nomeAmbiente = turma.ambiente?.nome_ambiente ?? 'N/A';
-            const nomeTurno = turma.turno?.nome_turno ?? 'N/A';
-
-            let nomesDocentes = 'Nenhum docente alocado';
-            if (turma.colaboradores && turma.colaboradores.length > 0) {
-                nomesDocentes = turma.colaboradores.map(c => c.nome_colaborador).join(', ');
-            }
-
-            const dataInicio = new Date(turma.data_inicio_turma + 'T00:00:00').toLocaleDateString('pt-BR');
-
-            html += `
-                        <div class="info-modal-turma-section">
-                            <h4>${nomeTurma} (${nomeTurno})</h4>
-                            <p><b>Curso:</b> ${nomeCurso}</p>
-                            <p><b>Ambiente:</b> ${nomeAmbiente}</p>
-                            <p><b>Docente(s):</b> ${nomesDocentes}</p>
-                            <p><b>Início da Turma:</b> ${dataInicio}</p>
-                        </div>
-                    `;
-        });
-
-        return html;
-    }
-
-
-    /**
-     * [MODIFICADO]
-     * Modal "Ver Mais" (Agora para de carregar corretamente)
-     */
-    function adicionarListenersVerMais() {
-        const verMaisBotoes = document.querySelectorAll('.ver-mais-btn');
-
-        verMaisBotoes.forEach(botao => {
-            botao.addEventListener('click', async (event) => {
-                const cell = event.target.closest('td');
-                const cellIndex = cell.cellIndex;
-                const headerCell = headerDaysRow.querySelectorAll('th')[cellIndex];
-                const dataParaApi = headerCell.dataset.dataApi;
-                const dataTitulo = headerCell.textContent;
-
-                // 1. Abre o modal de "Carregando"
-                Swal.fire({
-                    title: `Detalhes do Dia: ${dataTitulo}`,
-                    html: 'Buscando informações...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                try {
-                    // 2. Chama a API /turmas/diario
-                    const response = await fetch(`${API_URL}/turmas/diario?data=${dataParaApi}`, {
-                        headers: AUTH_HEADERS
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Falha ao buscar detalhes: ${response.statusText}`);
-                    }
-
-                    const turmasDoDia = await response.json();
-
-                    // 3. Constrói o HTML dinâmico
-                    const modalHtml = buildDynamicModalHtml(turmasDoDia);
-
-                    // 4. Atualiza o modal com os dados reais
-                    Swal.update({
-                        html: modalHtml,
-                        showConfirmButton: false,
-                        showCloseButton: true,
-                        customClass: {
-                            popup: 'custom-swal-popup',
-                            title: 'custom-swal-title',
-                            closeButton: 'custom-swal-close-button',
-                            htmlContainer: 'custom-swal-html-container'
-                        }
-                    });
-
-                    // *** ALTERAÇÃO ESSENCIAL ***
-                    // Para o spinner de loading
-                    Swal.hideLoading();
-
-                } catch (error) {
-                    console.error(error);
-
-                    // *** ALTERAÇÃO ESSENCIAL ***
-                    // Para o spinner de loading em caso de erro
-                    Swal.hideLoading();
-
-                    Swal.fire('Erro', error.message, 'error');
-                }
-            });
-        });
-    }
-
-    // --- LISTENERS DE NAVEGAÇÃO (BOTÕES < >) ---
+    // --- LISTENERS DE NAVEGAÇÃO ---
     if (prevWeekBtn) {
         prevWeekBtn.addEventListener('click', () => {
             dataAtual.setDate(dataAtual.getDate() - 7);
-            gerarCalendarioSemanal(dataAtual); // Recarrega os dados da API
+            gerarCalendarioSemanal(dataAtual);
         });
     }
 
     if (nextWeekBtn) {
         nextWeekBtn.addEventListener('click', () => {
             dataAtual.setDate(dataAtual.getDate() + 7);
-            gerarCalendarioSemanal(dataAtual); // Recarrega os dados da API
+            gerarCalendarioSemanal(dataAtual);
         });
     }
 
-    // --- INICIALIZAÇÃO DA PÁGINA ---
+    // --- INICIALIZAÇÃO ---
     gerarCalendarioSemanal(dataAtual);
 });
