@@ -45,8 +45,10 @@
                 <h1>Painel de Turmas</h1>
             </div>
             <div class="sair">
-                <a href=""><img src="./images/logout (2).png" alt=""></a>
-                <a href="./index.php">Sair</a>
+                <a href="#" id="btn-sair">
+                    <img src="./images/logout (2).png" alt="Sair" style="vertical-align: middle;">
+                    Sair
+                </a>
             </div>
         </section>
         <section class="options">
@@ -78,6 +80,66 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            // --- CONFIGURAÇÃO DA API ---
+            const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
+            const TOKEN = localStorage.getItem('authToken');
+
+            // --- LÓGICA DO BOTÃO SAIR (LOGOUT) ---
+            const btnSair = document.getElementById('btn-sair');
+
+            if (btnSair) {
+                btnSair.addEventListener('click', function(event) {
+                    event.preventDefault();
+
+                    Swal.fire({
+                        title: 'Você tem certeza?',
+                        text: "Você será desconectado do sistema.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Sim, quero sair!',
+                        cancelButtonText: 'Cancelar'
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+
+                            // Feedback visual
+                            Swal.fire({
+                                title: 'Saindo...',
+                                text: 'Encerrando sessão.',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                // Tenta fazer o logout na API
+                                if (TOKEN) {
+                                    await fetch(`${API_URL}/logout`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Authorization': `Bearer ${TOKEN}`,
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json'
+                                        }
+                                    });
+                                }
+                            } catch (error) {
+                                console.error("Erro na comunicação com API de logout:", error);
+                            } finally {
+                                // Limpa o token e redireciona de qualquer forma
+                                localStorage.removeItem('authToken');
+                                window.location.href = 'index.php';
+                            }
+                        }
+                    });
+                });
+            }
+
+            // --- SEU SCRIPT EXISTENTE PARA O CARD SEMESTRAL ---
+            // (Mantido caso você venha a usar, embora não tenha card-semestral no HTML acima)
             const cardSemestral = document.getElementById('card-semestral');
             if (cardSemestral) {
                 cardSemestral.addEventListener('click', function(event) {

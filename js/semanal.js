@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function () {
             icon: 'error',
             title: 'Não autenticado!',
             text: 'Você precisa fazer login para ver o calendário.',
+        }).then(() => {
+            window.location.href = 'index.php';
         });
         return;
     }
@@ -283,39 +285,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- INTERAÇÕES (Menu, Logout, Toggle) ---
+    // --- INTERAÇÕES (Menu, Toggle) ---
 
     const viewToggle = document.getElementById('view-toggle');
     if (viewToggle) {
-        // Marca como "Semanal" (checked) para saber que está nessa tela
         viewToggle.checked = true;
         viewToggle.addEventListener('change', function () {
-            // Se desmarcar, volta para mensal
             if (!this.checked) {
                 window.location.href = 'mensal.php';
             }
-        });
-    }
-
-    const btnSair = document.getElementById('btn-sair');
-    if (btnSair) {
-        btnSair.addEventListener('click', function (event) {
-            event.preventDefault();
-            const logoutUrl = this.href;
-            Swal.fire({
-                title: 'Você tem certeza?',
-                text: "Você será desconectado do sistema.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sim, quero sair!',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = logoutUrl;
-                }
-            });
         });
     }
 
@@ -331,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // =========================================================================
-    // BOTÃO DE GERENCIAR DIAS LETIVOS (COM POST)
+    // BOTÃO DE GERENCIAR DIAS LETIVOS
     // =========================================================================
     const manageDaysBtn = document.querySelector('.manage-days-btn');
     if (manageDaysBtn) {
@@ -368,8 +346,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
                 focusConfirm: false,
-
-                // LÓGICA PARA PEGAR OS DADOS
                 preConfirm: () => {
                     const data = document.getElementById('swal-input-data').value;
                     const descricao = document.getElementById('swal-input-descricao').value;
@@ -379,8 +355,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         Swal.showValidationMessage('Por favor, preencha todos os campos');
                         return false;
                     }
-
-                    // Retorna objeto pronto para POST
                     return {
                         data_dia_nao_letivo: data,
                         descricao_dia_nao_letivo: descricao,
@@ -401,7 +375,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
 
                     try {
-                        // FAZ O POST NA SUA ROTA
                         const response = await fetch(`${API_URL}/dias-nao-letivos`, {
                             method: 'POST',
                             headers: AUTH_HEADERS,
@@ -419,7 +392,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             text: 'Dia não letivo cadastrado com sucesso.'
                         });
 
-                        // Recarrega o calendário semanal
                         gerarCalendarioSemanal(dataAtual);
 
                     } catch (error) {

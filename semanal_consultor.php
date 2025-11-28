@@ -88,7 +88,7 @@
                 <h1>Calendário Semanal</h1>
             </div>
             <div class="sair">
-                <a href="logout.php" id="btn-sair"><img src="./images/logout (2).png" alt="Ícone de sair"> Sair</a>
+                <a href="#" id="btn-sair"><img src="./images/logout (2).png" alt="Ícone de sair"> Sair</a>
             </div>
         </section>
 
@@ -148,6 +148,8 @@
                     icon: 'error',
                     title: 'Não autenticado!',
                     text: 'Você precisa fazer login para ver o calendário.',
+                }).then(() => {
+                    window.location.href = 'index.php'; // Redireciona se não tiver token
                 });
                 return;
             }
@@ -436,11 +438,14 @@
                 });
             }
 
+            // =========================================================================
+            // LOGOUT ATUALIZADO (ROTA API)
+            // =========================================================================
             const btnSair = document.getElementById('btn-sair');
             if (btnSair) {
                 btnSair.addEventListener('click', function(event) {
                     event.preventDefault();
-                    const logoutUrl = this.href;
+
                     Swal.fire({
                         title: 'Você tem certeza?',
                         text: "Você será desconectado do sistema.",
@@ -450,9 +455,32 @@
                         cancelButtonColor: '#3085d6',
                         confirmButtonText: 'Sim, quero sair!',
                         cancelButtonText: 'Cancelar'
-                    }).then((result) => {
+                    }).then(async (result) => {
                         if (result.isConfirmed) {
-                            window.location.href = logoutUrl;
+
+                            // Mostra feedback visual de carregamento
+                            Swal.fire({
+                                title: 'Saindo...',
+                                text: 'Encerrando sessão.',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                // 1. Chama a API de Logout
+                                await fetch(`${API_URL}/logout`, {
+                                    method: 'POST',
+                                    headers: AUTH_HEADERS
+                                });
+                            } catch (error) {
+                                console.error("Erro na comunicação com API de logout:", error);
+                            } finally {
+                                // 2. Limpa o token e redireciona (Login/Index)
+                                localStorage.removeItem('authToken');
+                                window.location.href = 'index.php';
+                            }
                         }
                     });
                 });
@@ -466,111 +494,6 @@
                     menuBtn.classList.toggle('active');
                     sidebar.classList.toggle('active');
                     mainContent.classList.toggle('push');
-                });
-            }
-
-            // =========================================================================
-            // BOTÃO DE GERENCIAR DIAS LETIVOS (COM POST)
-            // =========================================================================
-            const manageDaysBtn = document.querySelector('.manage-days-btn');
-            if (manageDaysBtn) {
-                manageDaysBtn.addEventListener('click', () => {
-                    Swal.fire({
-                        title: 'Cadastrar Dia Não Letivo',
-                        html: `
-                    <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
-                        <div>
-                            <label for="swal-input-data" style="font-weight: bold; display: block; margin-bottom: 5px;">Data</label>
-                            <input type="date" id="swal-input-data" class="swal2-input" style="margin: 0; width: 100%; box-sizing: border-box;">
-                        </div>
-                        
-                        <div>
-                            <label for="swal-input-descricao" style="font-weight: bold; display: block; margin-bottom: 5px;">Descrição</label>
-                            <input type="text" id="swal-input-descricao" class="swal2-input" placeholder="Ex: Feriado Municipal" style="margin: 0; width: 100%; box-sizing: border-box;">
-                        </div>
-
-                        <div>
-                            <label for="swal-input-tipo" style="font-weight: bold; display: block; margin-bottom: 5px;">Tipo de Feriado</label>
-                            <select id="swal-input-tipo" class="swal2-select" style="margin: 0; width: 100%; box-sizing: border-box; display: flex;">
-                                <option value="Municipal">Municipal</option>
-                                <option value="Estadual">Estadual</option>
-                                <option value="Nacional">Nacional</option>
-                                <option value="Recesso">Recesso Escolar</option>
-                                <option value="Outro">Outro</option>
-                            </select>
-                        </div>
-                    </div>
-                `,
-                        showCancelButton: true,
-                        confirmButtonText: 'Salvar',
-                        cancelButtonText: 'Cancelar',
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        focusConfirm: false,
-
-                        // LÓGICA PARA PEGAR OS DADOS
-                        preConfirm: () => {
-                            const data = document.getElementById('swal-input-data').value;
-                            const descricao = document.getElementById('swal-input-descricao').value;
-                            const tipo = document.getElementById('swal-input-tipo').value;
-
-                            if (!data || !descricao || !tipo) {
-                                Swal.showValidationMessage('Por favor, preencha todos os campos');
-                                return false;
-                            }
-
-                            // Retorna objeto pronto para POST
-                            return {
-                                data_dia_nao_letivo: data,
-                                descricao_dia_nao_letivo: descricao,
-                                tipo_feriado_dia_nao_letivo: tipo
-                            };
-                        }
-                    }).then(async (result) => {
-                        if (result.isConfirmed) {
-                            const dadosParaSalvar = result.value;
-
-                            Swal.fire({
-                                title: 'Salvando...',
-                                text: 'Aguarde um momento.',
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });
-
-                            try {
-                                // FAZ O POST NA SUA ROTA
-                                const response = await fetch(`${API_URL}/dias-nao-letivos`, {
-                                    method: 'POST',
-                                    headers: AUTH_HEADERS,
-                                    body: JSON.stringify(dadosParaSalvar)
-                                });
-
-                                if (!response.ok) {
-                                    const errorData = await response.json().catch(() => ({}));
-                                    throw new Error(errorData.message || `Erro ${response.status}: Falha ao salvar.`);
-                                }
-
-                                await Swal.fire({
-                                    icon: 'success',
-                                    title: 'Sucesso!',
-                                    text: 'Dia não letivo cadastrado com sucesso.'
-                                });
-
-                                // Recarrega o calendário semanal
-                                gerarCalendarioSemanal(dataAtual);
-
-                            } catch (error) {
-                                console.error(error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Erro ao salvar',
-                                    text: error.message
-                                });
-                            }
-                        }
-                    });
                 });
             }
 

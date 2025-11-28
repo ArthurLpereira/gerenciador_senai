@@ -45,7 +45,7 @@
     <nav class="sidebar" id="sidebar">
         <ul>
             <li><a href="./home_consultor.php"><img src="./images/multiple-users-silhouette.png" alt="Ícone"> <span class="menu-texto">Calendário</span></a></li>
-            <li><a href="./perfil.php"><img src="./images/account.png" alt="Ícone"> <span class="menu-texto">Meu Perfil</span></a></li>
+            <li><a href="./user.php"><img src="./images/account.png" alt="Ícone"> <span class="menu-texto">Meu Perfil</span></a></li>
         </ul>
     </nav>
 
@@ -56,7 +56,7 @@
                 <h1>Meu Perfil</h1>
             </div>
             <div class="sair">
-                <a href="#" id="logout-button">
+                <a href="#" id="btn-sair">
                     <img src="./images/logout (2).png" alt="Ícone de Sair">
                     <span>Sair</span>
                 </a>
@@ -74,15 +74,13 @@
                     <img src="./images/foto_perfil.png" alt="Foto do Perfil">
                 </div>
                 <h2 id="user-name">Carregando...</h2>
-                <p id="user-email-display">...</p> <!-- Alterado ID para evitar conflito -->
+                <p id="user-email-display">...</p>
             </div>
 
             <div class="informacoes">
                 <div class="des">
-                    <!-- ALTERAÇÃO 1: 'Matrícula' virou 'Email' -->
                     <p><strong>Email:</strong> <span id="user-email">...</span></p>
                     <p><strong>Especialidades:</strong> <span id="user-specialty">...</span></p>
-                    <!-- ALTERAÇÃO 2: Adicionado campo para a Cor -->
                     <p><strong>Cor:</strong> <span id="user-color">...</span></p>
                     <p><strong>Data de Cadastro:</strong> <span id="user-created">...</span></p>
                 </div>
@@ -92,16 +90,16 @@
 
     <script src="./js/script.js"></script>
     <script src="./js/perfil.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURAÇÕES GLOBAIS ---
             const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
-
             const TOKEN = localStorage.getItem('authToken');
 
             // --- PROTEÇÃO DE PÁGINA ---
             if (!TOKEN) {
-                window.location.href = './index.php'; // Altere para o nome da sua tela de login
+                window.location.href = './index.php';
                 return;
             }
 
@@ -113,43 +111,62 @@
                 menuBtn.addEventListener('click', () => {
                     menuBtn.classList.toggle('active');
                     sidebar.classList.toggle('active');
-                    mainContent.classList.toggle('push'); // Use a classe correta se for diferente
+                    mainContent.classList.toggle('push');
                 });
             }
 
-            // --- LÓGICA DO BOTÃO DE LOGOUT ---
-            const logoutButton = document.getElementById('logout-button');
-            if (logoutButton) {
-                logoutButton.addEventListener('click', async (event) => {
+            // --- LÓGICA DO BOTÃO DE LOGOUT (PADRONIZADA) ---
+            const btnSair = document.getElementById('btn-sair');
+
+            if (btnSair) {
+                btnSair.addEventListener('click', function(event) {
                     event.preventDefault();
-                    const result = await Swal.fire({
+
+                    Swal.fire({
                         title: 'Você tem certeza?',
-                        text: "Sua sessão será encerrada com segurança.",
+                        text: "Você será desconectado do sistema.",
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
                         confirmButtonText: 'Sim, quero sair!',
                         cancelButtonText: 'Cancelar'
-                    });
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
 
-                    if (result.isConfirmed) {
-                        try {
-                            await fetch(`${API_URL}/logout`, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${TOKEN}`,
-                                    'Accept': 'application/json',
+                            // Feedback visual
+                            Swal.fire({
+                                title: 'Saindo...',
+                                text: 'Encerrando sessão.',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
                                 }
                             });
-                        } catch (error) {
-                            console.error('Falha ao comunicar com a API de logout:', error);
-                        } finally {
-                            localStorage.removeItem('authToken');
-                            localStorage.removeItem('user');
-                            window.location.href = './index.php'; // Altere para o nome da sua tela de login
+
+                            try {
+                                // Tenta fazer o logout na API
+                                if (TOKEN) {
+                                    await fetch(`${API_URL}/logout`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Authorization': `Bearer ${TOKEN}`,
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json'
+                                        }
+                                    });
+                                }
+                            } catch (error) {
+                                console.error("Erro na comunicação com API de logout:", error);
+                            } finally {
+                                // Limpa o token e redireciona
+                                localStorage.removeItem('authToken');
+                                // Se você usa 'user' no localStorage, limpe também:
+                                localStorage.removeItem('user');
+                                window.location.href = 'index.php';
+                            }
                         }
-                    }
+                    });
                 });
             }
         });

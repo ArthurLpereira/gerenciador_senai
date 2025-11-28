@@ -116,7 +116,7 @@
                 <h1>Calendário Mensal</h1>
             </div>
             <div class="sair">
-                <a href="logout.php" id="btn-sair"><img src="./images/logout (2).png" alt="Ícone de sair"> Sair</a>
+                <a href="#" id="btn-sair"><img src="./images/logout (2).png" alt="Ícone de sair"> Sair</a>
             </div>
         </section>
 
@@ -177,6 +177,8 @@
                     icon: 'error',
                     title: 'Não autenticado!',
                     text: 'Faça login.'
+                }).then(() => {
+                    window.location.href = 'index.php';
                 });
                 return;
             }
@@ -378,63 +380,6 @@
                 });
             }
 
-            // --- BOTÃO GERENCIAR DIAS (POST) ---
-            const manageDaysBtn = document.querySelector('.manage-days-btn');
-            if (manageDaysBtn) {
-                manageDaysBtn.addEventListener('click', () => {
-                    Swal.fire({
-                        title: 'Cadastrar Dia Não Letivo',
-                        html: `
-                            <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
-                                <div><label style="font-weight:bold">Data</label><input type="date" id="swal-input-data" class="swal2-input" style="width:100%;margin:0"></div>
-                                <div><label style="font-weight:bold">Descrição</label><input type="text" id="swal-input-descricao" class="swal2-input" placeholder="Ex: Feriado" style="width:100%;margin:0"></div>
-                                <div><label style="font-weight:bold">Tipo</label>
-                                    <select id="swal-input-tipo" class="swal2-select" style="width:100%;margin:0;display:flex">
-                                        <option value="Municipal">Municipal</option>
-                                        <option value="Estadual">Estadual</option>
-                                        <option value="Nacional">Nacional</option>
-                                        <option value="Emenda">Emenda</option>
-                                        <option value="Ponto Facultativo">Ponto Facultativo</option>
-                                    </select>
-                                </div>
-                            </div>`,
-                        showCancelButton: true,
-                        confirmButtonText: 'Salvar',
-                        preConfirm: () => {
-                            const data = document.getElementById('swal-input-data').value;
-                            const descricao = document.getElementById('swal-input-descricao').value;
-                            const tipo = document.getElementById('swal-input-tipo').value;
-                            if (!data || !descricao || !tipo) return Swal.showValidationMessage('Preencha tudo');
-                            return {
-                                data_dia_nao_letivo: data,
-                                descricao_dia_nao_letivo: descricao,
-                                tipo_feriado_dia_nao_letivo: tipo
-                            };
-                        }
-                    }).then(async (result) => {
-                        if (result.isConfirmed) {
-                            Swal.fire({
-                                title: 'Salvando...',
-                                didOpen: () => Swal.showLoading()
-                            });
-                            try {
-                                const res = await fetch(`${API_URL}/dias-nao-letivos`, {
-                                    method: 'POST',
-                                    headers: AUTH_HEADERS,
-                                    body: JSON.stringify(result.value)
-                                });
-                                if (!res.ok) throw new Error('Erro ao salvar');
-
-                                await Swal.fire('Sucesso!', 'Dia cadastrado.', 'success');
-                                gerarCalendario(dataAtual); // Recarrega o calendário Mensal
-                            } catch (err) {
-                                Swal.fire('Erro', err.message, 'error');
-                            }
-                        }
-                    });
-                });
-            }
-
             // --- NAVEGAÇÃO MENSAL ---
             if (prevMonthBtn) prevMonthBtn.addEventListener('click', () => {
                 dataAtual.setMonth(dataAtual.getMonth() - 1);
@@ -454,12 +399,55 @@
                 });
             }
 
-            // Logout/Menu
+            // =========================================================================
+            // LOGOUT API ATUALIZADO (IGUAL AO SEMANAL)
+            // =========================================================================
             const btnSair = document.getElementById('btn-sair');
-            if (btnSair) btnSair.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.location.href = btnSair.href;
-            });
+            if (btnSair) {
+                btnSair.addEventListener('click', function(event) {
+                    event.preventDefault();
+
+                    Swal.fire({
+                        title: 'Você tem certeza?',
+                        text: "Você será desconectado do sistema.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Sim, quero sair!',
+                        cancelButtonText: 'Cancelar'
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+
+                            // Feedback visual
+                            Swal.fire({
+                                title: 'Saindo...',
+                                text: 'Encerrando sessão.',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            try {
+                                // 1. Chama a API de Logout (POST)
+                                await fetch(`${API_URL}/logout`, {
+                                    method: 'POST',
+                                    headers: AUTH_HEADERS
+                                });
+                            } catch (error) {
+                                console.error("Erro na comunicação com API de logout:", error);
+                            } finally {
+                                // 2. Limpa o token e redireciona
+                                localStorage.removeItem('authToken');
+                                window.location.href = 'index.php';
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Menu Mobile
             const menuBtn = document.getElementById('menu-btn');
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('conteudo');
