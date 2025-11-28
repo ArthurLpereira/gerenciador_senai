@@ -49,20 +49,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const nomeTurno = s.turno?.nome_turno;
             if (!nomeTurno) return;
 
-            if (nomeTurno === 'Manhã') {
+            if (nomeTurno.includes('Manhã') || nomeTurno === 'Integral') {
                 porTurno.Manhã.push(s);
-            } else if (nomeTurno === 'Tarde') {
+            }
+            if (nomeTurno.includes('Tarde') || nomeTurno === 'Integral') {
                 porTurno.Tarde.push(s);
-            } else if (nomeTurno === 'Noite') {
-                porTurno.Noite.push(s);
-            } else if (nomeTurno === 'Manhã-Tarde' || nomeTurno === 'Integral') {
-                porTurno.Manhã.push(s);
-                porTurno.Tarde.push(s);
-            } else if (nomeTurno === 'Manhã-Noite') {
-                porTurno.Manhã.push(s);
-                porTurno.Noite.push(s);
-            } else if (nomeTurno === 'Tarde-Noite') {
-                porTurno.Tarde.push(s);
+            }
+            if (nomeTurno.includes('Noite')) {
                 porTurno.Noite.push(s);
             }
         });
@@ -135,9 +128,9 @@ document.addEventListener('DOMContentLoaded', function () {
         nomeMes = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
         titleElement.textContent = nomeMes;
 
-        // Configura dias da semana
+        // Configura dias da semana (Começando de Domingo)
         const inicioSemana = new Date(dataBase);
-        inicioSemana.setDate(dataBase.getDate() - dataBase.getDay()); // Volta para domingo
+        inicioSemana.setDate(dataBase.getDate() - dataBase.getDay());
         const diasDaSemanaNomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
         const diasDaSemana = [];
 
@@ -169,9 +162,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Pega TODOS os eventos do dia
                 const sessoesDoDia = agendamentos[dataString] || [];
 
-                // =========================================================
-                // [LÓGICA CORRIGIDA] Verifica Feriado / Dia Não Letivo
-                // =========================================================
                 // 1. Procura se existe feriado/dia não letivo vindo do banco
                 const eventoFeriado = sessoesDoDia.find(s => s.tipo_evento === 'nao_letivo');
 
@@ -187,9 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else if (eventoFeriado) {
                     // Prioridade 2: Feriado do Banco
                     td.className = 'dia-nao-letivo';
-                    // Exibe o título vindo do banco (ex: "Dia não letivo")
                     td.textContent = eventoFeriado.titulo || 'Dia não letivo';
-                    // Tooltip com a descrição
                     td.title = eventoFeriado.descricao || '';
 
                 } else {
@@ -299,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const viewToggle = document.getElementById('view-toggle');
     if (viewToggle) {
-        // Marca como "Semanal" (checked)
+        // Marca como "Semanal" (checked) para saber que está nessa tela
         viewToggle.checked = true;
         viewToggle.addEventListener('change', function () {
             // Se desmarcar, volta para mensal
@@ -342,14 +330,107 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // =========================================================================
+    // BOTÃO DE GERENCIAR DIAS LETIVOS (COM POST)
+    // =========================================================================
     const manageDaysBtn = document.querySelector('.manage-days-btn');
     if (manageDaysBtn) {
         manageDaysBtn.addEventListener('click', () => {
             Swal.fire({
-                title: 'Gerenciar Dias Letivos',
-                html: `... (seu HTML de formulário aqui) ...`,
+                title: 'Cadastrar Dia Não Letivo',
+                html: `
+                    <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
+                        <div>
+                            <label for="swal-input-data" style="font-weight: bold; display: block; margin-bottom: 5px;">Data</label>
+                            <input type="date" id="swal-input-data" class="swal2-input" style="margin: 0; width: 100%; box-sizing: border-box;">
+                        </div>
+                        
+                        <div>
+                            <label for="swal-input-descricao" style="font-weight: bold; display: block; margin-bottom: 5px;">Descrição</label>
+                            <input type="text" id="swal-input-descricao" class="swal2-input" placeholder="Ex: Feriado Municipal" style="margin: 0; width: 100%; box-sizing: border-box;">
+                        </div>
+
+                        <div>
+                            <label for="swal-input-tipo" style="font-weight: bold; display: block; margin-bottom: 5px;">Tipo de Feriado</label>
+                            <select id="swal-input-tipo" class="swal2-select" style="margin: 0; width: 100%; box-sizing: border-box; display: flex;">
+                                <option value="Municipal">Municipal</option>
+                                <option value="Estadual">Estadual</option>
+                                <option value="Nacional">Nacional</option>
+                                <option value="Recesso">Recesso Escolar</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+                `,
                 showCancelButton: true,
-                confirmButtonText: 'Salvar Alterações',
+                confirmButtonText: 'Salvar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                focusConfirm: false,
+
+                // LÓGICA PARA PEGAR OS DADOS
+                preConfirm: () => {
+                    const data = document.getElementById('swal-input-data').value;
+                    const descricao = document.getElementById('swal-input-descricao').value;
+                    const tipo = document.getElementById('swal-input-tipo').value;
+
+                    if (!data || !descricao || !tipo) {
+                        Swal.showValidationMessage('Por favor, preencha todos os campos');
+                        return false;
+                    }
+
+                    // Retorna objeto pronto para POST
+                    return {
+                        data_dia_nao_letivo: data,
+                        descricao_dia_nao_letivo: descricao,
+                        tipo_feriado_dia_nao_letivo: tipo
+                    };
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const dadosParaSalvar = result.value;
+
+                    Swal.fire({
+                        title: 'Salvando...',
+                        text: 'Aguarde um momento.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    try {
+                        // FAZ O POST NA SUA ROTA
+                        const response = await fetch(`${API_URL}/dias-nao-letivos`, {
+                            method: 'POST',
+                            headers: AUTH_HEADERS,
+                            body: JSON.stringify(dadosParaSalvar)
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            throw new Error(errorData.message || `Erro ${response.status}: Falha ao salvar.`);
+                        }
+
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Sucesso!',
+                            text: 'Dia não letivo cadastrado com sucesso.'
+                        });
+
+                        // Recarrega o calendário semanal
+                        gerarCalendarioSemanal(dataAtual);
+
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro ao salvar',
+                            text: error.message
+                        });
+                    }
+                }
             });
         });
     }
