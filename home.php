@@ -24,10 +24,10 @@
         /* Isso garante que os botões fiquem bonitos como na tela de relatórios */
         .modal-opcoes-container {
             display: flex;
-            height: 170px;
             justify-content: center;
-            gap: 55px;
+            gap: 60px;
             padding: 10px;
+            height: 170px;
         }
 
         .modal-opcao-btn {
@@ -35,8 +35,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 130px;   
-            height: 130px;
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
             text-decoration: none;
             color: white;
@@ -60,7 +60,7 @@
         }
 
         .modal-opcao-btn img {
-            width: 60px;
+            width: 65px;
             height: auto;
             margin-bottom: 5px;
         }

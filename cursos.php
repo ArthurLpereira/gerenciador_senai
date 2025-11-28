@@ -193,6 +193,9 @@
     </div>
 
     <script src="./js/curso.js"></script>
+    <script>
+        
+    </script>
 </body>
 
 </html>

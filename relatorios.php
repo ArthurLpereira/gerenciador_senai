@@ -88,6 +88,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const menuBtn = document.getElementById('menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            const conteudo = document.getElementById('conteudo');
+
+            if (menuBtn && sidebar && conteudo) {
+                menuBtn.addEventListener('click', () => {
+                    menuBtn.classList.toggle('active');
+                    sidebar.classList.toggle('active');
+                    conteudo.classList.toggle('push');
+                });
+            }
             const abrirModalBtn = document.getElementById('abrir-modal-relatorio');
 
             abrirModalBtn.addEventListener('click', function() {
