@@ -4,17 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador-SENAI</title>
+    <title>Gerenciador-SENAI - Mensal</title>
     <link rel="stylesheet" href="./css/mensal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
 
     <style>
+        /* MANTIDO O ESTILO ORIGINAL PARA FICAR "ARRASTÁVEL" */
         .calendar-header {
             display: flex;
             justify-content: start;
             gap: 500px;
             align-items: center;
             width: 352.9vw !important;
+            /* Isso garante o scroll horizontal */
         }
 
         .calendar-header h2 {
@@ -34,7 +36,7 @@
             padding: 0 5px;
         }
 
-        /* Estilos do modal dinâmico (do semanal.html) */
+        /* Estilos do modal */
         .info-modal-turma-section {
             text-align: left;
             margin-bottom: 15px;
@@ -66,15 +68,26 @@
             margin-bottom: 0 !important;
         }
 
-        /* Classe CSS para estilizar a célula de feriado (igual ao domingo se quiser) */
+        /* --- ESTILO DOS DIAS NÃO LETIVOS (VERMELHO) --- */
         .dia-nao-letivo {
-            background-color: #f0f0f0;
-            /* Cinza claro ou use #ffcccc para vermelho claro */
-            color: #d33;
+            background-color: #ffebee;
+            /* Vermelho claro */
+            color: #d32f2f;
+            /* Vermelho escuro */
             text-align: center;
             vertical-align: middle;
             font-weight: bold;
             font-size: 0.9em;
+            border: 1px solid #ffcdd2;
+        }
+
+        /* Estilo básico caso não carregue o css externo */
+        .room-name {
+            background-color: #f4f4f4;
+            padding: 10px;
+            position: sticky;
+            left: 0;
+            z-index: 10;
         }
     </style>
 </head>
@@ -164,7 +177,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            // --- CONFIGURAÇÕES GLOBAIS DA API ---
+            // --- CONFIGURAÇÕES DA API ---
             const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
             const TOKEN = localStorage.getItem('authToken');
 
@@ -172,7 +185,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Não autenticado!',
-                    text: 'Você precisa fazer login para ver o calendário.',
+                    text: 'Faça login.'
                 });
                 return;
             }
@@ -183,18 +196,16 @@
                 'Accept': 'application/json',
             };
 
-            // --- SELETORES DE ELEMENTOS ---
+            // --- SELETORES ---
             const titleElement = document.getElementById('month-year-title');
             const headerDaysRow = document.getElementById('calendar-header-days');
             const calendarBody = document.getElementById('calendar-body');
             const prevMonthBtn = document.getElementById('prev-month-btn');
             const nextMonthBtn = document.getElementById('next-month-btn');
 
-            // --- ESTADO DO CALENDÁRIO ---
-            let dataAtual = new Date(); // Guarda a data atual do calendário
+            let dataAtual = new Date();
 
             // --- FUNÇÕES AUXILIARES ---
-
             function formatarDataParaAPI(data) {
                 const ano = data.getFullYear();
                 const mes = String(data.getMonth() + 1).padStart(2, '0');
@@ -212,103 +223,76 @@
                 sessoes.forEach(s => {
                     const nomeTurno = s.turno?.nome_turno;
                     if (!nomeTurno) return;
-
-                    if (nomeTurno === 'Manhã') {
-                        porTurno.Manhã.push(s);
-                    } else if (nomeTurno === 'Tarde') {
-                        porTurno.Tarde.push(s);
-                    } else if (nomeTurno === 'Noite') {
-                        porTurno.Noite.push(s);
-                    } else if (nomeTurno === 'Manhã-Tarde' || nomeTurno === 'Integral') {
-                        porTurno.Manhã.push(s);
-                        porTurno.Tarde.push(s);
-                    } else if (nomeTurno === 'Manhã-Noite') {
-                        porTurno.Manhã.push(s);
-                        porTurno.Noite.push(s);
-                    } else if (nomeTurno === 'Tarde-Noite') {
-                        porTurno.Tarde.push(s);
-                        porTurno.Noite.push(s);
-                    }
+                    if (nomeTurno.includes('Manhã') || nomeTurno === 'Integral') porTurno.Manhã.push(s);
+                    if (nomeTurno.includes('Tarde') || nomeTurno === 'Integral') porTurno.Tarde.push(s);
+                    if (nomeTurno.includes('Noite')) porTurno.Noite.push(s);
                 });
 
                 let html = '<div class="schedule-slot">';
                 let temAgendamento = false;
 
                 if (porTurno.Manhã.length > 0) {
-                    const nomesTurmas = [...new Set(porTurno.Manhã.map(s => s.nome_turma))].join(', ');
-                    html += `<p><span class="time-initial">M</span> ${nomesTurmas}</p>`;
+                    const nomes = [...new Set(porTurno.Manhã.map(s => s.nome_turma))].join(', ');
+                    html += `<p><span class="time-initial">M</span> ${nomes}</p>`;
                     temAgendamento = true;
                 }
                 if (porTurno.Tarde.length > 0) {
-                    const nomesTurmas = [...new Set(porTurno.Tarde.map(s => s.nome_turma))].join(', ');
-                    html += `<p><span class="time-initial">T</span> ${nomesTurmas}</p>`;
+                    const nomes = [...new Set(porTurno.Tarde.map(s => s.nome_turma))].join(', ');
+                    html += `<p><span class="time-initial">T</span> ${nomes}</p>`;
                     temAgendamento = true;
                 }
                 if (porTurno.Noite.length > 0) {
-                    const nomesTurmas = [...new Set(porTurno.Noite.map(s => s.nome_turma))].join(', ');
-                    html += `<p><span class="time-initial">N</span> ${nomesTurmas}</p>`;
+                    const nomes = [...new Set(porTurno.Noite.map(s => s.nome_turma))].join(', ');
+                    html += `<p><span class="time-initial">N</span> ${nomes}</p>`;
                     temAgendamento = true;
                 }
 
-                if (temAgendamento) {
-                    html += '<button class="ver-mais-btn">Ver Mais</button>';
-                }
-
+                if (temAgendamento) html += '<button class="ver-mais-btn">Ver Mais</button>';
                 html += '</div>';
                 return temAgendamento ? html : '';
             }
 
-            // --- LÓGICA PRINCIPAL DO CALENDÁRIO MENSAL ---
-
+            // --- LÓGICA MENSAL (ARRASTÁVEL) ---
             async function gerarCalendario(dataBase) {
                 if (!titleElement || !headerDaysRow || !calendarBody) return;
 
                 const ano = dataBase.getFullYear();
-                const mes = dataBase.getMonth(); // 0-11
-                const mesParaApi = mes + 1; // 1-12
+                const mes = dataBase.getMonth();
+                const mesParaApi = mes + 1;
 
-                // Feedback de carregamento
                 calendarBody.innerHTML = '<tr><td colspan="32">Carregando dados da API...</td></tr>';
 
-                // 1. Buscar os DADOS COMPLETOS
+                // 1. GET NA API
                 let data;
                 try {
                     const response = await fetch(`${API_URL}/turmas/mensal?ano=${ano}&mes=${mesParaApi}`, {
                         headers: AUTH_HEADERS
                     });
-                    if (!response.ok) {
-                        throw new Error(`Falha ao buscar dados do calendário: ${response.statusText}`);
-                    }
+                    if (!response.ok) throw new Error(response.statusText);
                     data = await response.json();
-
-                    if (!data.ambientes || !data.agendamentos) {
-                        throw new Error("A API não retornou a estrutura 'ambientes' e 'agendamentos' esperada.");
-                    }
                 } catch (error) {
                     console.error(error);
-                    Swal.fire('Erro de API', error.message, 'error');
+                    Swal.fire('Erro', error.message, 'error');
                     calendarBody.innerHTML = `<tr><td colspan="32">Erro ao carregar dados.</td></tr>`;
                     return;
                 }
 
-                // 2. Extrair dados da resposta
                 const listaDeAmbientes = data.ambientes;
                 const agendamentos = data.agendamentos;
 
-                // 3. Limpar o calendário anterior
+                // 2. TÍTULO E CABEÇALHO
                 headerDaysRow.innerHTML = '<th>Ambientes</th>';
                 calendarBody.innerHTML = '';
 
-                // 4. Definir o título (Mês e Ano)
                 const nomeMes = dataBase.toLocaleString('pt-BR', {
                     month: 'long'
                 });
                 titleElement.textContent = `${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)} de ${ano}`;
 
-                // 5. Gerar cabeçalhos (Dias do Mês)
                 const diasNoMes = new Date(ano, mes + 1, 0).getDate();
                 const diasDaSemanaNomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
+                // Cria colunas para CADA dia do mês (1 a 30/31)
                 for (let dia = 1; dia <= diasNoMes; dia++) {
                     const diaCorrente = new Date(ano, mes, dia);
                     const diaSemanaNome = diasDaSemanaNomes[diaCorrente.getDay()];
@@ -319,44 +303,37 @@
                     headerDaysRow.appendChild(th);
                 }
 
-                // 6. Gerar as linhas e preencher as células
+                // 3. CRIA AS LINHAS (AMBIENTES)
                 listaDeAmbientes.forEach(ambiente => {
                     const tr = document.createElement('tr');
+
+                    // Coluna Fixa do Ambiente
                     const thAmbiente = document.createElement('th');
                     thAmbiente.className = 'room-name';
                     thAmbiente.textContent = ambiente.nome_ambiente;
                     tr.appendChild(thAmbiente);
 
+                    // Células dos dias
                     for (let dia = 1; dia <= diasNoMes; dia++) {
                         const diaCorrente = new Date(ano, mes, dia);
-                        const diaDaSemanaNum = diaCorrente.getDay(); // 0 = Domingo
-                        const dataString = formatarDataParaAPI(diaCorrente); // YYYY-MM-DD
-
+                        const diaDaSemanaNum = diaCorrente.getDay();
+                        const dataString = formatarDataParaAPI(diaCorrente);
                         const td = document.createElement('td');
 
-                        // Pega TODOS os eventos do dia
                         const sessoesDoDia = agendamentos[dataString] || [];
 
-                        // -------------------------------------------------------------------------
-                        // [NOVA LOGICA AQUI] Verifica se tem algum evento "nao_letivo"
-                        // -------------------------------------------------------------------------
+                        // [LÓGICA DO FERIADO]
                         const eventoFeriado = sessoesDoDia.find(s => s.tipo_evento === 'nao_letivo');
-
-                        // Filtra as turmas normais para este ambiente
                         const sessoesDaCelula = sessoesDoDia.filter(s => s.ambiente_id === ambiente.id);
 
-                        if (diaDaSemanaNum === 0) { // Prioridade 1: Domingo
+                        if (diaDaSemanaNum === 0) { // Domingo
                             td.className = 'dia-nao-letivo';
                             td.textContent = 'Domingo';
-
-                        } else if (eventoFeriado) { // Prioridade 2: FERIADO (vinda do Back-end)
-                            td.className = 'dia-nao-letivo';
-                            // Usa o título que veio do PHP (ex: "Dia não letivo")
+                        } else if (eventoFeriado) { // Feriado do Banco
+                            td.className = 'dia-nao-letivo'; // VERMELHO
                             td.textContent = eventoFeriado.titulo || 'Dia não letivo';
-                            // Coloca a descrição (ex: "Feriado Municipal") como tooltip
                             td.title = eventoFeriado.descricao || '';
-
-                        } else { // Prioridade 3: Aulas normais
+                        } else {
                             td.innerHTML = criarSlotsAgendamento(sessoesDaCelula);
                         }
 
@@ -365,166 +342,143 @@
                     calendarBody.appendChild(tr);
                 });
 
-                // 7. Adiciona os listeners aos botões "Ver Mais"
                 adicionarListenersVerMais();
             }
 
-
-            // --- FUNÇÕES DE INTERAÇÃO ---
-
-            function buildDynamicModalHtml(turmasDoDia) {
-                if (turmasDoDia.length === 0) {
-                    return '<p>Nenhuma turma encontrada para este dia.</p>';
-                }
-                let html = '';
-                turmasDoDia.forEach(turma => {
-                    const nomeTurma = turma.nome_turma ?? 'N/A';
-                    const nomeCurso = turma.curso?.nome_curso ?? 'N/A';
-                    const nomeAmbiente = turma.ambiente?.nome_ambiente ?? 'N/A';
-                    const nomeTurno = turma.turno?.nome_turno ?? 'N/A';
-
-                    let nomesDocentes = 'Nenhum docente alocado';
-                    if (turma.colaboradores && turma.colaboradores.length > 0) {
-                        nomesDocentes = turma.colaboradores.map(c => c.nome_colaborador).join(', ');
-                    }
-                    const dataInicio = new Date(turma.data_inicio_turma + 'T00:00:00').toLocaleDateString('pt-BR');
-
-                    html += `
-                        <div class="info-modal-turma-section">
-                            <h4>${nomeTurma} (${nomeTurno})</h4>
-                            <p><b>Curso:</b> ${nomeCurso}</p>
-                            <p><b>Ambiente:</b> ${nomeAmbiente}</p>
-                            <p><b>Docente(s):</b> ${nomesDocentes}</p>
-                            <p><b>Início da Turma:</b> ${dataInicio}</p>
-                        </div>
-                    `;
-                });
-                return html;
-            }
-
+            // --- MODAL VER MAIS ---
             function adicionarListenersVerMais() {
-                const verMaisBotoes = document.querySelectorAll('.ver-mais-btn');
-
-                verMaisBotoes.forEach(botao => {
+                document.querySelectorAll('.ver-mais-btn').forEach(botao => {
                     botao.addEventListener('click', async (event) => {
                         const cell = event.target.closest('td');
-                        const cellIndex = cell.cellIndex;
-                        const headerCell = headerDaysRow.querySelectorAll('th')[cellIndex];
-
+                        const headerCell = headerDaysRow.querySelectorAll('th')[cell.cellIndex];
                         const dataParaApi = headerCell.dataset.dataApi;
-                        const dataTitulo = headerCell.textContent;
 
                         Swal.fire({
-                            title: `Detalhes do Dia: ${dataTitulo}`,
-                            html: 'Buscando informações...',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
+                            title: `Detalhes`,
+                            html: 'Carregando...',
+                            didOpen: () => Swal.showLoading()
                         });
 
                         try {
-                            const response = await fetch(`${API_URL}/turmas/diario?data=${dataParaApi}`, {
+                            const res = await fetch(`${API_URL}/turmas/diario?data=${dataParaApi}`, {
                                 headers: AUTH_HEADERS
                             });
-                            if (!response.ok) throw new Error(`Falha ao buscar detalhes: ${response.statusText}`);
+                            const turmas = await res.json();
 
-                            const turmasDoDia = await response.json();
-                            const modalHtml = buildDynamicModalHtml(turmasDoDia);
+                            let html = turmas.length ? '' : '<p>Sem turmas.</p>';
+                            turmas.forEach(t => {
+                                html += `<div class="info-modal-turma-section">
+                                    <h4>${t.nome_turma ?? ''} (${t.turno?.nome_turno ?? ''})</h4>
+                                    <p>Curso: ${t.curso?.nome_curso ?? ''}</p>
+                                    <p>Ambiente: ${t.ambiente?.nome_ambiente ?? ''}</p>
+                                </div>`;
+                            });
 
                             Swal.update({
-                                html: modalHtml,
+                                html: html,
                                 showConfirmButton: false,
-                                showCloseButton: true,
-                                customClass: {
-                                    popup: 'custom-swal-popup',
-                                    title: 'custom-swal-title',
-                                    closeButton: 'custom-swal-close-button',
-                                    htmlContainer: 'custom-swal-html-container'
-                                }
+                                showCloseButton: true
                             });
                             Swal.hideLoading();
-
-                        } catch (error) {
-                            console.error(error);
-                            Swal.hideLoading();
-                            Swal.fire('Erro', error.message, 'error');
+                        } catch (err) {
+                            Swal.fire('Erro', err.message, 'error');
                         }
                     });
                 });
             }
 
-            // --- LÓGICA DE INTERAÇÃO ORIGINAL ---
-
-            const viewToggle = document.getElementById('view-toggle');
-            if (viewToggle) {
-                viewToggle.checked = false;
-                viewToggle.addEventListener('change', function() {
-                    if (this.checked) {
-                        window.location.href = 'semanal.php';
-                    }
-                });
-            }
-
-            const btnSair = document.getElementById('btn-sair');
-            if (btnSair) {
-                btnSair.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    const logoutUrl = this.href;
-                    Swal.fire({
-                        title: 'Você tem certeza?',
-                        text: "Você será desconectado do sistema.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Sim, quero sair!',
-                        cancelButtonText: 'Cancelar'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = logoutUrl;
-                        }
-                    });
-                });
-            }
-
-            const menuBtn = document.getElementById('menu-btn');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('conteudo');
-            if (menuBtn && sidebar && mainContent) {
-                menuBtn.addEventListener('click', () => {
-                    menuBtn.classList.toggle('active');
-                    sidebar.classList.toggle('active');
-                    mainContent.classList.toggle('push');
-                });
-            }
-
+            // --- BOTÃO GERENCIAR DIAS (POST) ---
             const manageDaysBtn = document.querySelector('.manage-days-btn');
             if (manageDaysBtn) {
                 manageDaysBtn.addEventListener('click', () => {
                     Swal.fire({
-                        title: 'Gerenciar Dias Letivos',
-                        html: `... (Seu formulário HTML estático aqui) ...`,
+                        title: 'Cadastrar Dia Não Letivo',
+                        html: `
+                            <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
+                                <div><label style="font-weight:bold">Data</label><input type="date" id="swal-input-data" class="swal2-input" style="width:100%;margin:0"></div>
+                                <div><label style="font-weight:bold">Descrição</label><input type="text" id="swal-input-descricao" class="swal2-input" placeholder="Ex: Feriado" style="width:100%;margin:0"></div>
+                                <div><label style="font-weight:bold">Tipo</label>
+                                    <select id="swal-input-tipo" class="swal2-select" style="width:100%;margin:0;display:flex">
+                                        <option value="Municipal">Municipal</option>
+                                        <option value="Estadual">Estadual</option>
+                                        <option value="Nacional">Nacional</option>
+                                        <option value="Emenda">Emenda</option>
+                                        <option value="Ponto Facultativo">Ponto Facultativo</option>
+                                    </select>
+                                </div>
+                            </div>`,
+                        showCancelButton: true,
+                        confirmButtonText: 'Salvar',
+                        preConfirm: () => {
+                            const data = document.getElementById('swal-input-data').value;
+                            const descricao = document.getElementById('swal-input-descricao').value;
+                            const tipo = document.getElementById('swal-input-tipo').value;
+                            if (!data || !descricao || !tipo) return Swal.showValidationMessage('Preencha tudo');
+                            return {
+                                data_dia_nao_letivo: data,
+                                descricao_dia_nao_letivo: descricao,
+                                tipo_feriado_dia_nao_letivo: tipo
+                            };
+                        }
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Salvando...',
+                                didOpen: () => Swal.showLoading()
+                            });
+                            try {
+                                const res = await fetch(`${API_URL}/dias-nao-letivos`, {
+                                    method: 'POST',
+                                    headers: AUTH_HEADERS,
+                                    body: JSON.stringify(result.value)
+                                });
+                                if (!res.ok) throw new Error('Erro ao salvar');
+
+                                await Swal.fire('Sucesso!', 'Dia cadastrado.', 'success');
+                                gerarCalendario(dataAtual); // Recarrega o calendário Mensal
+                            } catch (err) {
+                                Swal.fire('Erro', err.message, 'error');
+                            }
+                        }
                     });
                 });
             }
 
-            // --- LISTENERS DOS BOTÕES DE NAVEGAÇÃO ---
-            if (prevMonthBtn) {
-                prevMonthBtn.addEventListener('click', () => {
-                    dataAtual.setMonth(dataAtual.getMonth() - 1);
-                    gerarCalendario(dataAtual);
+            // --- NAVEGAÇÃO MENSAL ---
+            if (prevMonthBtn) prevMonthBtn.addEventListener('click', () => {
+                dataAtual.setMonth(dataAtual.getMonth() - 1);
+                gerarCalendario(dataAtual);
+            });
+            if (nextMonthBtn) nextMonthBtn.addEventListener('click', () => {
+                dataAtual.setMonth(dataAtual.getMonth() + 1);
+                gerarCalendario(dataAtual);
+            });
+
+            // Toggle para Semanal
+            const viewToggle = document.getElementById('view-toggle');
+            if (viewToggle) {
+                viewToggle.checked = false;
+                viewToggle.addEventListener('change', function() {
+                    if (this.checked) window.location.href = 'semanal.php';
                 });
             }
 
-            if (nextMonthBtn) {
-                nextMonthBtn.addEventListener('click', () => {
-                    dataAtual.setMonth(dataAtual.getMonth() + 1);
-                    gerarCalendario(dataAtual);
-                });
-            }
+            // Logout/Menu
+            const btnSair = document.getElementById('btn-sair');
+            if (btnSair) btnSair.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = btnSair.href;
+            });
+            const menuBtn = document.getElementById('menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('conteudo');
+            if (menuBtn) menuBtn.addEventListener('click', () => {
+                menuBtn.classList.toggle('active');
+                sidebar.classList.toggle('active');
+                mainContent.classList.toggle('push');
+            });
 
-            // --- INICIALIZAÇÃO DA PÁGINA ---
+            // Início
             gerarCalendario(dataAtual);
         });
     </script>
