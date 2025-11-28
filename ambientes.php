@@ -130,6 +130,8 @@
     </div>
 
     <script src="./js/ambientes.js"></script>
+    <script src="./js/script.js"></script>
+
 </body>
 
 </html>
