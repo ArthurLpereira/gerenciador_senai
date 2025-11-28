@@ -24,8 +24,9 @@
         /* Isso garante que os botões fiquem bonitos como na tela de relatórios */
         .modal-opcoes-container {
             display: flex;
+            height: 170px;
             justify-content: center;
-            gap: 20px;
+            gap: 55px;
             padding: 10px;
         }
 
@@ -34,9 +35,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 100px;
-            height: 100px;
-            border-radius: 10px;
+            width: 130px;   
+            height: 130px;
+            border-radius: 50%;
             text-decoration: none;
             color: white;
             font-weight: bold;
@@ -59,7 +60,7 @@
         }
 
         .modal-opcao-btn img {
-            width: 40px;
+            width: 60px;
             height: auto;
             margin-bottom: 5px;
         }
@@ -179,7 +180,7 @@
                         `,
                         showConfirmButton: false,
                         showCloseButton: true,
-                        width: '450px',
+                        width: '500px',
                         // O didOpen garante que o JS encontre os botões dentro do modal criado
                         didOpen: () => {
                             // Botão PDF
