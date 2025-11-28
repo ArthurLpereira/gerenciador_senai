@@ -9,7 +9,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    </head>
+</head>
 
 <body>
     <header>
@@ -23,7 +23,7 @@
 
     <nav class="sidebar" id="sidebar">
         <ul>
-             <li>
+            <li>
                 <a href="./home.php">
                     <img src="./images/multiple-users-silhouette.png" alt="Ícone de perfil">
                     <span class="menu-texto">Painel de<br>Turmas</span>
@@ -58,7 +58,7 @@
         </section>
         <article class="container">
             <div class="cards" id="prim">
-                <a href="gerenciar.php">
+                <a href="gerenciar_consultor.php">
                     <img src="./images/dash.png" alt="">
                     <span></span>
                     <h1>Dashboard</h1>
@@ -77,10 +77,10 @@
     <script src="./js/script.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const cardSemestral = document.getElementById('card-semestral');
             if (cardSemestral) {
-                cardSemestral.addEventListener('click', function (event) {
+                cardSemestral.addEventListener('click', function(event) {
                     event.preventDefault();
 
                     Swal.fire({
@@ -115,5 +115,6 @@
             }
         });
     </script>
-    </body>
+</body>
+
 </html>

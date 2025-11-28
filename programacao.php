@@ -47,10 +47,10 @@
         <img class="logo_senai" src="./images/logo_senai.png" alt="Logo SENAI">
     </header>
 
-     <nav class="sidebar" id="sidebar">
+    <nav class="sidebar" id="sidebar">
         <ul>
-             <li>
-                <a href="./home.php">
+            <li>
+                <a href="./home_consultor.php">
                     <img src="./images/multiple-users-silhouette.png" alt="Ícone de perfil">
                     <span class="menu-texto">Painel de<br>Turmas</span>
                 </a>
@@ -88,7 +88,7 @@
                 </div>
             </div>
             <div class="management-controls">
-                
+
                 <label class="toggle-switch" title="Mudar para visualização Semanal">
                     <input type="checkbox" id="view-toggle">
                     <span class="slider"></span>

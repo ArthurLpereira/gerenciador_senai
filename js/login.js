@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
                 case 3:
                     // Altere 'coordenador_area.html' para a sua página de coordenador
-                    window.location.href = 'perfil.php';
+                    window.location.href = 'home_consultor.php';
                     break;
                 default:
                     // Se o nível não for reconhecido, vai para uma página padrão
