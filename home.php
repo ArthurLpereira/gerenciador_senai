@@ -6,17 +6,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador-SENAI</title>
     <link rel="stylesheet" href="./css/home.css">
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     <style>
-        /* Adicionado para garantir que o link de sair funcione bem */
+        /* CSS para o botão de Sair */
         .sair a {
             display: flex;
             align-items: center;
             text-decoration: none;
             color: inherit;
-            /* Herda a cor do texto do pai */
             gap: 8px;
+        }
+
+        /* --- CSS DO MODAL (ADICIONADO) --- */
+        /* Isso garante que os botões fiquem bonitos como na tela de relatórios */
+        .modal-opcoes-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .modal-opcao-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.2s;
+            font-family: Arial, sans-serif;
+        }
+
+        .modal-opcao-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .modal-btn-pdf {
+            background-color: #e74c3c;
+            /* Vermelho PDF */
+        }
+
+        .modal-btn-xls {
+            background-color: #27ae60;
+            /* Verde Excel */
+        }
+
+        .modal-opcao-btn img {
+            width: 40px;
+            height: auto;
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -32,7 +77,6 @@
     </header>
 
     <nav class="sidebar" id="sidebar">
-        <!-- Seu menu lateral aqui -->
         <ul>
             <li><a href="./home.php"><img src="./images/calendar.png" alt="Ícone de perfil"><span class="menu-texto">Calendário<br></span></a></li>
             <li><a href="./gerenciar.php"><img src="./images/profile.png" alt="Ícone de perfil"><span class="menu-texto">Gerenciar<br>Cadastros</span></a></li>
@@ -50,9 +94,7 @@
                 <img src="./images/calendar (2).png" alt="">
                 <h1>Calendário</h1>
             </div>
-            <!-- ÁREA DO LOGOUT CORRIGIDA -->
             <div class="sair">
-                <!-- A imagem e o texto agora estão dentro de um único link com ID -->
                 <a href="#" id="logout-button">
                     <img src="./images/logout (2).png" alt="Ícone de Sair">
                     <span>Sair</span>
@@ -61,22 +103,32 @@
         </section>
         <section class="options">
             <div class="alinha">
-                <!-- Adicionado um ID para a mensagem de boas-vindas -->
                 <p id="welcome-message" style="font-size: 22px;">Seja bem vindo(a) ao</p>
                 <h1>Sistema de Gerenciamento de Alocação</h1>
             </div>
             <p style="color: gray;font-size: 20px;">Selecione qual calendário deseja visualizar:</p>
         </section>
         <article class="container">
-            <div class="cards" id="p"><a href="./semestral.php" id="card-semestral"><img src="./images/graduation.png" alt=""><span></span>
+            <div class="cards" id="p">
+                <a href="./semestral.php" id="card-semestral">
+                    <img src="./images/graduation.png" alt=""><span></span>
                     <h1>Semestral</h1>
-                </a></div>
-            <div class="cards" id="s"><a href="./mensal.php"><img src="./images/graduation.png" alt=""><span></span>
+                </a>
+            </div>
+
+            <div class="cards" id="s">
+                <a href="./mensal.php">
+                    <img src="./images/graduation.png" alt=""><span></span>
                     <h1>Mensal</h1>
-                </a></div>
-            <div class="cards" id="t"><a href="./semanal.php"><img src="./images/graduation.png" alt=""><span></span>
+                </a>
+            </div>
+
+            <div class="cards" id="t">
+                <a href="./semanal.php">
+                    <img src="./images/graduation.png" alt=""><span></span>
                     <h1>Semanal</h1>
-                </a></div>
+                </a>
+            </div>
         </article>
     </main>
 
@@ -85,27 +137,77 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURAÇÕES GLOBAIS ---
-            const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
+            const API_BASE_URL = 'http://10.141.117.34:8024'; // Centralizei o IP aqui
+            const API_URL = `${API_BASE_URL}/arthur-pereira/api_sga/api`;
 
             const TOKEN = localStorage.getItem('authToken');
             const USER_STRING = localStorage.getItem('user');
 
-
+            // Verifica login
             if (!TOKEN || !USER_STRING) {
                 window.location.href = './index.php';
                 return;
             }
 
+            // Mensagem de boas-vindas
             const user = JSON.parse(USER_STRING);
             const welcomeMessage = document.getElementById('welcome-message');
             if (welcomeMessage) {
                 welcomeMessage.textContent = `Seja bem-vindo(a), ${user.nome_colaborador}!`;
             }
 
+            // --- LÓGICA DO CARD SEMESTRAL (MODAL) ---
+            const cardSemestral = document.getElementById('card-semestral');
+
+            if (cardSemestral) {
+                cardSemestral.addEventListener('click', function(event) {
+                    event.preventDefault(); // Impede o link padrão
+
+                    Swal.fire({
+                        title: 'Gerar Relatório Semestral', // Título atualizado
+                        html: `
+                        <div class="modal-opcoes-container">
+                            <a href="#" id="btn-semestral-pdf" class="modal-opcao-btn modal-btn-pdf">
+                                <img src="./images/pdf.png" alt="PDF">
+                                <span>PDF</span>
+                            </a>
+                            <a href="#" id="btn-semestral-xls" class="modal-opcao-btn modal-btn-xls">
+                                <img src="./images/file.png" alt="XLS">
+                                <span>XLS</span>
+                            </a>
+                        </div>
+                        `,
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        width: '450px',
+                        // O didOpen garante que o JS encontre os botões dentro do modal criado
+                        didOpen: () => {
+                            // Botão PDF
+                            document.getElementById('btn-semestral-pdf').addEventListener('click', (e) => {
+                                e.preventDefault();
+                                // IMPORTANTE: Verifique se a rota da API é apenas /gerar-pdf ou se precisa de algo específico para semestral
+                                const urlPdf = `${API_URL}/gerar-pdf`;
+                                window.open(urlPdf, '_blank');
+                                Swal.close();
+                            });
+
+                            // Botão XLS/CSV
+                            document.getElementById('btn-semestral-xls').addEventListener('click', (e) => {
+                                e.preventDefault();
+                                const urlXls = `${API_URL}/gerar-csv`;
+                                window.location.href = urlXls;
+                                Swal.close();
+                            });
+                        }
+                    });
+                });
+            }
+
+            // --- LÓGICA DE LOGOUT ---
             const logoutButton = document.getElementById('logout-button');
             if (logoutButton) {
                 logoutButton.addEventListener('click', async (event) => {
-                    event.preventDefault(); // Impede que o link mude a URL
+                    event.preventDefault();
 
                     const result = await Swal.fire({
                         title: 'Você tem certeza?',
