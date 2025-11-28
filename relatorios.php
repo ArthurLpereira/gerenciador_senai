@@ -96,11 +96,11 @@
                     html: `
                 <div class="modal-opcoes-container">
                     <a href="relatorios.php?export=pdf" id="btn-gerar-pdf" class="modal-opcao-btn modal-btn-pdf">
-                        <img src="./images/pdf.png" alt="Ícone PDF" style="width: 50px; height: auto; margin-bottom: 5px;">
+                        <img src="./images/pdf.png" alt="Ícone PDF" style="width: 60px; height: auto; margin-bottom: 5px;">
                         <span>PDF</span>
                     </a>
                     <a href="relatorios.php?export=xls" id="btn-gerar-xls" class="modal-opcao-btn modal-btn-xls">
-                        <img src="./images/file.png" alt="Ícone XLS" style="width: 45px; height: auto; margin-bottom: 5px;">
+                        <img src="./images/file.png" alt="Ícone XLS" style="width: 55px; height: auto; margin-bottom: 5px;">
                         <span>XLS</span>
                     </a>
                 </div>
@@ -108,7 +108,7 @@
                     showConfirmButton: false,
                     showCancelButton: false,
                     showCloseButton: true,
-                    width: '450px',
+                    width: '500px',
                     customClass: {
                         popup: 'modal-relatorios-custom'
                     },
