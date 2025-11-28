@@ -5,12 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alterar Alocações - SGA SENAI</title>
-    <link rel="stylesheet" href="./css/home.css"> <!-- Certifique-se de que o caminho do CSS está correto -->
+    <link rel="stylesheet" href="./css/home.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <style>
-        /* Estilos adicionais para garantir o funcionamento */
+        body{
+            overflow-y: scroll !important;
+        }
         .sair a {
             display: flex;
             align-items: center;
@@ -22,13 +24,24 @@
         .card-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 71px;
             margin-top: 20px;
+            justify-content: flex-start;
+            width: 100%;
+            margin: 20px auto 0 auto;
         }
 
         .turma-card {
             flex-basis: calc(50% - 10px);
-            background-color: #f8f9fa;
+            max-width: 400px;
+            min-width: 300px;
+            flex-grow: 1;
+            /* Permite que ocupe o espaço disponível se necessário */
+
+            background-color: #fff;
+            /* Fundo branco para se destacar */
+            border: 1px solid #e0e0e0;
+            /* Borda sutil como na imagem */
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -117,7 +130,7 @@
     <main id="conteudo">
         <section class="titulo">
             <div class="calendar">
-                <img src="./images/alocacao.png" alt="Ícone de Alocação" style="width: 40px; height: 40px;">
+                <img src="./images/red.png" alt="Ícone de Alocação" style="width: 40px; height: 40px;">
                 <h1>Alterar Alocações</h1>
             </div>
             <div class="sair">
@@ -140,12 +153,23 @@
         </div>
 
         <div id="lista-turmas" class="card-grid">
-            <!-- Os cards das turmas da API serão carregados aqui -->
+            <div class="turma-card" data-id="1">
+                <h3>Nome: DEV REG 2024</h3>
+                <p><i class="bi bi-person"></i> Docente: Marcos Reis Ferreira</p>
+                <p><i class="bi bi-geo-alt-fill"></i> Atual Ambiente: Sala 202</p>
+                <button class="alterar-btn" data-id="1" data-nome="DEV REG 2024">Alterar</button>
+            </div>
+            <div class="turma-card" data-id="2">
+                <h3>Nome: EDIFICAÇÕES 2024</h3>
+                <p><i class="bi bi-person"></i> Docente: Ana Paula SIlva</p>
+                <p><i class="bi bi-geo-alt-fill"></i> Atual Ambiente: Laboratório 1</p>
+                <button class="alterar-btn" data-id="2" data-nome="EDIFICAÇÕES 2024">Alterar</button>
+            </div>
         </div>
     </main>
 
-    <script src="./js/script.js"></script> <!-- Script Geral (menu e logout) -->
-    <script src="./js/locacoes.js"></script> <!-- Script Específico desta página -->
+    <script src="./js/script.js"></script>
+    <script src="./js/locacoes.js"></script>
 </body>
 
 </html>
