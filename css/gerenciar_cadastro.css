@@ -629,6 +629,14 @@ main.push {
     align-items: center;
     gap: 10px;
 }
+.funcoes_curso{
+    width: 300px;
+    display: flex;
+    margin-bottom: 5px;
+    justify-content: center;
+    gap: 15px;
+    padding-bottom: 10px;
+}
 
 .funcoes_curso .status_docente {
     height: 45px;
