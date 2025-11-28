@@ -24,7 +24,7 @@
     <nav class="sidebar" id="sidebar">
         <ul>
             <li>
-                <a href="./home.php">
+                <a href="./home_consultor.php">
                     <img src="./images/multiple-users-silhouette.png" alt="Ícone de perfil">
                     <span class="menu-texto">Painel de<br>Turmas</span>
                 </a>
