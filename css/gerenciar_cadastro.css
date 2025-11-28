@@ -269,7 +269,8 @@ main.push {
     padding: 30px;
     border-radius: 12px;
     width: 90%;
-    max-width: 550px;
+    /* !!! AUMENTADO PARA MAIS ESPAÇO PARA O TEXTO LONGO !!! */
+    max-width: 650px;
     position: relative;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     animation: fadeIn 0.3s ease-out;
@@ -313,6 +314,153 @@ main.push {
     text-align: center;
 }
 
+/* * -------------------- INÍCIO DAS ALTERAÇÕES NOS FORMULÁRIOS DE AMBIENTE --------------------
+ */
+
+/* =========================================================================
+ * 1. FORMULÁRIO DE CRIAÇÃO (#formCriar)
+ * ========================================================================= */
+
+#formCriar {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 20px 20px; 
+    width: 100%;
+    align-items: flex-end; 
+    margin-top: 20px;
+}
+
+/* Estilo para Inputs (#formCriar): Underlined e Font 18px */
+#formCriar input[type="text"],
+#formCriar input[type="number"] {
+    flex: 1 1 calc(50% - 10px); 
+    min-width: 150px;
+    height: 45px;
+    padding: 10px 0;
+    font-size: 18px; 
+    color: #333;
+    
+    border: none;
+    border-bottom: 1px solid #ccc; 
+    background: transparent;
+    transition: border-bottom-color 0.3s ease-in-out;
+}
+
+/* Foco nos Inputs (#formCriar) */
+#formCriar input:focus {
+    outline: none; 
+    border-bottom-color: #d90000; 
+}
+
+/* Estilo para Select (#formCriar): Botão Cinza Arredondado e Font 18px */
+#formCriar select {
+    flex: 1 1 calc(50% - 10px); 
+    /* !!! AUMENTADO PARA MAIS ESPAÇO PARA O TEXTO LONGO !!! */
+    min-width: 200px; 
+    height: 45px;
+    font-size: 18px; 
+    color: #333;
+    
+    border: none;
+    background-color: #e0e0e0; 
+    border-radius: 8px; 
+    padding: 0 15px; 
+    border: 1px solid #ccc;
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none; 
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px 12px;
+    transition: border-color 0.3s ease-in-out;
+}
+
+#formCriar select:focus {
+    outline: none;
+    border-color: #9A1915;
+}
+
+/* =========================================================================
+ * 2. FORMULÁRIO DE EDIÇÃO (#formEditar)
+ * ========================================================================= */
+
+#formEditar {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 20px 20px; 
+    width: 100%;
+    align-items: flex-end; 
+    margin-top: 20px;
+}
+
+/* Estilo para Inputs (#formEditar): Underlined e Font 18px */
+#formEditar input[type="text"],
+#formEditar input[type="number"] {
+    flex: 1 1 calc(50% - 10px); 
+    min-width: 150px;
+    height: 45px;
+    padding: 10px 0;
+    font-size: 18px; 
+    color: #333;
+    
+    border: none;
+    border-bottom: 1px solid #ccc; 
+    background: transparent;
+    transition: border-bottom-color 0.3s ease-in-out;
+}
+
+/* Foco nos Inputs (#formEditar) */
+#formEditar input:focus {
+    outline: none; 
+    border-bottom-color: #d90000; 
+}
+
+/* Estilo para Select (#formEditar): Botão Cinza Arredondado e Font 18px */
+#formEditar select {
+    flex: 1 1 calc(50% - 10px); 
+    /* !!! AUMENTADO PARA MAIS ESPAÇO PARA O TEXTO LONGO !!! */
+    min-width: 200px; 
+    height: 45px;
+    font-size: 18px; 
+    color: #333;
+    
+    border: none;
+    background-color: #e0e0e0; 
+    border-radius: 8px; 
+    padding: 0 15px; 
+    border: 1px solid #ccc;
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none; 
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px 12px;
+    transition: border-color 0.3s ease-in-out;
+}
+
+#formEditar select:focus {
+    outline: none;
+    border-color: #9A1915;
+}
+
+
+/* Regras comuns de botões e containers */
+
+/* Contêiner do botão "Criar" / "Salvar" */
+.button-container {
+    flex: 1 1 calc(50% - 10px); 
+    display: flex;
+    justify-content: flex-end; 
+    align-items: flex-end; 
+    height: 45px;
+    margin-bottom: 0;
+}
+
+/* Mantido para outras partes do código que usam .input-group */
 .input-group {
     display: flex;
     gap: 20px;
@@ -320,12 +468,13 @@ main.push {
     flex-direction: row;
 }
 
+/* Mantido para outras partes do código que usam .input-group */
 .input-group input {
     flex: 1;
     padding: 12px 0;
     border: none;
     border-bottom: 1px solid #ccc;
-    font-size: 18px;
+    font-size: 18px; 
     background-color: transparent;
 }
 
@@ -338,10 +487,9 @@ main.push {
     color: #aaa;
 }
 
-.button-container {
-    display: flex;
-    justify-content: flex-end;
-}
+/* * -------------------- FIM DAS ALTERAÇÕES NOS FORMULÁRIOS DE AMBIENTE --------------------
+ */
+
 
 .btn-criar,
 .btn-salvar {
@@ -351,11 +499,19 @@ main.push {
     padding: 14px 35px;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 18px; 
     font-weight: 700;
     width: auto;
     transition: background-color 0.3s ease;
 }
+
+.btn-criar,
+.btn-salvar {
+    /* Altura consistente com os campos */
+    height: 45px; 
+    padding: 10px 35px;
+}
+
 
 .btn-criar:hover,
 .btn-salvar:hover {
@@ -620,4 +776,11 @@ main.push {
 .perfil-select-container select:focus {
     outline: none;
     border-color: #9A1915;
+}
+
+#nome_ambiente{
+    width: 200px;
+    height: 40px;
+    border: transparent;
+    border-bottom: 5px red;
 }

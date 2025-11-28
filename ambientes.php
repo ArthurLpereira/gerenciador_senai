@@ -96,8 +96,8 @@
             <h2>Criar Ambiente</h2>
             <hr>
             <form id="formCriar">
-                <input type="text" id="nome_ambiente" placeholder="Nome do Ambiente (Ex: Laboratório 1)" required>
-                <input type="number" id="num_ambiente" placeholder="Número do Ambiente (Opcional)">
+                <input type="text" id="nome_ambiente" placeholder="Nome do Ambiente" required>
+                <input type="number" id="num_ambiente" placeholder="Número do Ambiente">
                 <input type="number" id="capacidade_ambiente" placeholder="Capacidade de Alunos" required>
                 <select id="tipo_ambiente_id" required>
                     <option value="" disabled selected>Selecione um Tipo</option>
