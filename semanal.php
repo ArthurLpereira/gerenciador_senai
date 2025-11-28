@@ -4,12 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador-SENAI</title>
+    <title>Gerenciador-SENAI - Semanal</title>
+
     <link rel="stylesheet" href="./css/semanal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
 
     <style>
-        /* --- ESTILOS GERAIS DO MODAL --- */
+        /* --- ESTILOS ESPECÍFICOS INTERNOS --- */
+
         .info-modal-turma-section {
             text-align: left;
             margin-bottom: 15px;
@@ -41,22 +43,23 @@
             margin-bottom: 0 !important;
         }
 
-        /* ================================================================
-           ESTILO DOS DIAS NÃO LETIVOS (VERMELHO)
-           ================================================================
-           Isso fará o fundo ficar vermelho claro e o texto vermelho escuro
-        */
+        /* --- ESTILO DOS DIAS NÃO LETIVOS (VERMELHO) --- */
         .dia-nao-letivo {
             background-color: #ffebee;
-            /* Vermelho bem clarinho */
+            /* Vermelho claro */
             color: #d32f2f;
-            /* Vermelho escuro (padrão Senai/Erro) */
+            /* Vermelho escuro */
             text-align: center;
             vertical-align: middle;
             font-weight: bold;
             font-size: 0.95em;
             border: 1px solid #ffcdd2;
-            /* Borda vermelha sutil */
+        }
+
+        .room-name {
+            background-color: #f4f4f4;
+            font-weight: bold;
+            padding: 10px;
         }
     </style>
 </head>
