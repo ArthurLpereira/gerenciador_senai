@@ -1,13 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-*{
+
+* {
     padding: 0;
     margin: 0;
 }
-html{
+
+html {
     width: 100vw;
     height: 100vh;
 }
-body{
+
+body {
     width: 100vw;
     height: 100vh;
     background-image: url(../images/fundo.png);
@@ -18,7 +21,8 @@ body{
     justify-content: center;
     align-items: center;
 }
-.main-login{
+
+.main-login {
     height: 78%;
     width: 752px;
     border: 4px solid white;
@@ -31,7 +35,8 @@ body{
     gap: 30px;
     position: fixed;
 }
-.titulo-login{
+
+.titulo-login {
     font-family: "Montserrat";
     display: flex;
     justify-content: center;
@@ -39,7 +44,8 @@ body{
     flex-direction: column;
     width: 100%;
 }
-.inps-login{
+
+.inps-login {
     width: 100%;
     font-family: "Montserrat";
     display: flex;
@@ -47,16 +53,19 @@ body{
     color: white;
     align-items: end;
 }
-.inps-login a{
+
+.inps-login a {
     color: white;
     text-decoration: none;
     margin: 10px;
 }
-.inps-login a:hover{
+
+.inps-login a:hover {
     color: white;
     text-decoration: underline;
 }
-.inps-login input{
+
+.inps-login input {
     height: 60px;
     width: 676px;
     background-color: rgba(0, 0, 0, 0.3);
@@ -66,23 +75,26 @@ body{
     font-weight: 500;
     margin-top: 10px;
 }
-.inps-login input:focus{
+
+.inps-login input:focus {
     outline: none;
 }
-.inps-login input::placeholder{
+
+.inps-login input::placeholder {
     color: white;
 }
+
 .input-box {
     position: relative;
     display: flex;
     align-items: center;
     margin-top: 20px;
-    
+
 }
 
 .input-box i {
     position: absolute;
-    left: 30px; 
+    left: 30px;
     font-size: 30px;
     color: white;
     top: 22px;
@@ -98,23 +110,27 @@ body{
     font-weight: 500;
     padding-left: 80px;
     color: white;
-    font-family: "Montserrat";  
+    font-family: "Montserrat";
 }
+
 .input-box input::placeholder {
     color: white;
 }
-.input-box:focus{
+
+.input-box:focus {
     border: none;
 }
-.enviar-login{
+
+.enviar-login {
     width: 100%;
     height: 40%;
     display: flex;
     justify-content: center;
-    align-items:center;
+    align-items: center;
 
 }
-.enviar-login input{
+
+.enviar-login input {
     font-family: "Montserrat";
     font-weight: 700;
     height: 84px;
@@ -127,17 +143,20 @@ body{
     transition: all 0.4s ease-in-out;
     cursor: pointer;
 }
-.enviar-login input:hover{
+
+.enviar-login input:hover {
     background-color: #9A1915;
     transform: scale(1.02);
 }
-.conect{
+
+.conect {
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
 }
-.conect button{
+
+.conect button {
     width: 45%;
     height: 40px;
     margin-top: 20px;
@@ -151,6 +170,16 @@ body{
     align-items: center;
     gap: 10px;
 }
-.conect i{
+
+.conect i {
     font-size: 20px;
+}
+
+.swal2-title {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+/* Personalizar o texto do corpo do alerta */
+.swal2-html-container {
+    font-family: 'Montserrat', sans-serif !important;
 }

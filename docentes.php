@@ -172,6 +172,9 @@
                 <div class="form-grid-container">
                     <div class="input-wrapper"><input type="text" id="edit_nome_colaborador" placeholder="Nome do Docente" required></div>
                     <div class="input-wrapper"><input type="email" id="edit_email_colaborador" placeholder="Email" required></div>
+
+                    <div class="input-wrapper"><input type="password" id="edit_senha_colaborador" placeholder="Nova Senha (Opcional)"></div>
+
                     <div class="input-wrapper"><input type="text" id="edit_especialidade_colaborador" placeholder="Especialidades"></div>
                     <div class="input-wrapper"><select id="edit_tipo_colaborador_id" required>
                             <option value="" disabled selected>Selecione um Tipo</option>
