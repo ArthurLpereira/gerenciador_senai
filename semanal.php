@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
 
     <style>
-        /* --- ESTILOS ESPECÍFICOS INTERNOS --- */
+        /* --- ESTILOS ESPECÍFICOS INTERNOS (Mantidos) --- */
 
         .info-modal-turma-section {
             text-align: left;
@@ -43,17 +43,36 @@
             margin-bottom: 0 !important;
         }
 
-        /* --- ESTILO DOS DIAS NÃO LETIVOS (VERMELHO) --- */
+        /* ------------------------------------------------ */
+        /* --- ESTILOS CORRIGIDOS PARA O NOVO REQUISITO --- */
+        /* ------------------------------------------------ */
+
+        /* --- ESTILO DOS DIAS NÃO LETIVOS (Fundo Cinza Claro, Texto Vermelho) --- */
         .dia-nao-letivo {
-            background-color: #ffebee;
-            /* Vermelho claro */
-            color: #d32f2f;
-            /* Vermelho escuro */
+            background-color: #EAEAEA !important;
+            /* Cinza claro para o fundo */
+            color: #D62828 !important;
+            /* Cor do texto em VERMELHO */
             text-align: center;
             vertical-align: middle;
             font-weight: bold;
             font-size: 0.95em;
-            border: 1px solid #ffcdd2;
+            border: 1px solid #D1D1D1;
+            /* Borda mais clara */
+        }
+
+        /* --- NOVO ESTILO PARA FERIADOS (Fundo Cinza Claro, Texto Laranja) --- */
+        .dia-feriado {
+            background-color: #EAEAEA !important;
+            /* Cinza claro, igual ao não letivo */
+            color: #F77F00 !important;
+            /* Cor do texto em LARANJA */
+            text-align: center;
+            vertical-align: middle;
+            font-weight: bold;
+            font-size: 0.95em;
+            border: 1px solid #D1D1D1;
+            /* Borda mais clara */
         }
 
         .room-name {
@@ -312,22 +331,33 @@
                         const sessoesDoDia = agendamentos[dataString] || [];
 
                         // 1. Procura se existe feriado/dia não letivo vindo do banco
-                        const eventoFeriado = sessoesDoDia.find(s => s.tipo_evento === 'nao_letivo');
+                        const eventoNaoLetivo = sessoesDoDia.find(s => s.tipo_evento === 'nao_letivo');
 
                         // 2. Filtra as aulas normais para este ambiente
                         const sessoesDaCelula = sessoesDoDia.filter(s => s.ambiente_id === ambiente.id);
 
                         // --- DECISÃO DE EXIBIÇÃO ---
                         if (diaDaSemanaNum === 0) {
-                            // Prioridade 1: Domingo
+                            // Prioridade 1: Domingo (Usa a classe do Dia Não Letivo)
                             td.className = 'dia-nao-letivo';
                             td.textContent = 'Domingo';
 
-                        } else if (eventoFeriado) {
+                        } else if (eventoNaoLetivo) {
                             // Prioridade 2: Feriado do Banco
-                            td.className = 'dia-nao-letivo';
-                            td.textContent = eventoFeriado.titulo || 'Dia não letivo';
-                            td.title = eventoFeriado.descricao || '';
+                            const titulo = eventoNaoLetivo.descricao_dia_nao_letivo || 'Dia não letivo';
+                            const tipo = eventoNaoLetivo.tipo_feriado_dia_nao_letivo;
+
+                            // Aplica a classe baseada no TIPO do evento
+                            if (tipo === 'Municipal' || tipo === 'Estadual' || tipo === 'Nacional') {
+                                // Feriados OFICIAIS (Texto Laranja)
+                                td.className = 'dia-feriado';
+                            } else {
+                                // Recesso, Outro, Emenda (Texto Vermelho)
+                                td.className = 'dia-nao-letivo';
+                            }
+
+                            td.textContent = titulo;
+                            td.title = eventoNaoLetivo.descricao_dia_nao_letivo || '';
 
                         } else {
                             // Prioridade 3: Aulas Normais
@@ -343,7 +373,7 @@
                 adicionarListenersVerMais();
             }
 
-            // --- FUNÇÕES DO MODAL "VER MAIS" ---
+            // --- FUNÇÕES DO MODAL "VER MAIS" (Mantidas) ---
 
             function buildDynamicModalHtml(turmasDoDia) {
                 if (turmasDoDia.length === 0) {
@@ -365,14 +395,14 @@
                     const dataInicio = new Date(turma.data_inicio_turma + 'T00:00:00').toLocaleDateString('pt-BR');
 
                     html += `
-                <div class="info-modal-turma-section">
-                    <h4>${nomeTurma} (${nomeTurno})</h4>
-                    <p><b>Curso:</b> ${nomeCurso}</p>
-                    <p><b>Ambiente:</b> ${nomeAmbiente}</p>
-                    <p><b>Docente(s):</b> ${nomesDocentes}</p>
-                    <p><b>Início da Turma:</b> ${dataInicio}</p>
-                </div>
-            `;
+                        <div class="info-modal-turma-section">
+                            <h4>${nomeTurma} (${nomeTurno})</h4>
+                            <p><b>Curso:</b> ${nomeCurso}</p>
+                            <p><b>Ambiente:</b> ${nomeAmbiente}</p>
+                            <p><b>Docente(s):</b> ${nomesDocentes}</p>
+                            <p><b>Início da Turma:</b> ${dataInicio}</p>
+                        </div>
+                    `;
                 });
 
                 return html;
@@ -432,7 +462,7 @@
                 });
             }
 
-            // --- INTERAÇÕES (Menu, Toggle) ---
+            // --- INTERAÇÕES (Menu, Toggle) (Mantidas) ---
 
             const viewToggle = document.getElementById('view-toggle');
             if (viewToggle) {
@@ -508,7 +538,7 @@
             }
 
             // =========================================================================
-            // BOTÃO DE GERENCIAR DIAS LETIVOS
+            // BOTÃO DE GERENCIAR DIAS LETIVOS (Mantido)
             // =========================================================================
             const manageDaysBtn = document.querySelector('.manage-days-btn');
             if (manageDaysBtn) {
@@ -516,29 +546,29 @@
                     Swal.fire({
                         title: 'Cadastrar Dia Não Letivo',
                         html: `
-                    <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
-                        <div>
-                            <label for="swal-input-data" style="font-weight: bold; display: block; margin-bottom: 5px;">Data</label>
-                            <input type="date" id="swal-input-data" class="swal2-input" style="margin: 0; width: 100%; box-sizing: border-box;">
-                        </div>
-                        
-                        <div>
-                            <label for="swal-input-descricao" style="font-weight: bold; display: block; margin-bottom: 5px;">Descrição</label>
-                            <input type="text" id="swal-input-descricao" class="swal2-input" placeholder="Ex: Feriado Municipal" style="margin: 0; width: 100%; box-sizing: border-box;">
-                        </div>
+                            <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
+                                <div>
+                                    <label for="swal-input-data" style="font-weight: bold; display: block; margin-bottom: 5px;">Data</label>
+                                    <input type="date" id="swal-input-data" class="swal2-input" style="margin: 0; width: 100%; box-sizing: border-box;">
+                                </div>
+                                
+                                <div>
+                                    <label for="swal-input-descricao" style="font-weight: bold; display: block; margin-bottom: 5px;">Descrição</label>
+                                    <input type="text" id="swal-input-descricao" class="swal2-input" placeholder="Ex: Feriado Municipal" style="margin: 0; width: 100%; box-sizing: border-box;">
+                                </div>
 
-                        <div>
-                            <label for="swal-input-tipo" style="font-weight: bold; display: block; margin-bottom: 5px;">Tipo de Feriado</label>
-                            <select id="swal-input-tipo" class="swal2-select" style="margin: 0; width: 100%; box-sizing: border-box; display: flex;">
-                                <option value="Municipal">Municipal</option>
-                                <option value="Estadual">Estadual</option>
-                                <option value="Nacional">Nacional</option>
-                                <option value="Recesso">Recesso Escolar</option>
-                                <option value="Outro">Outro</option>
-                            </select>
-                        </div>
-                    </div>
-                `,
+                                <div>
+                                    <label for="swal-input-tipo" style="font-weight: bold; display: block; margin-bottom: 5px;">Tipo de Feriado</label>
+                                    <select id="swal-input-tipo" class="swal2-select" style="margin: 0; width: 100%; box-sizing: border-box; display: flex;">
+                                        <option value="Municipal">Municipal</option>
+                                        <option value="Estadual">Estadual</option>
+                                        <option value="Nacional">Nacional</option>
+                                        <option value="Recesso">Recesso Escolar</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                </div>
+                            </div>
+                        `,
                         showCancelButton: true,
                         confirmButtonText: 'Salvar',
                         cancelButtonText: 'Cancelar',
@@ -606,7 +636,7 @@
                 });
             }
 
-            // --- LISTENERS DE NAVEGAÇÃO ---
+            // --- LISTENERS DE NAVEGAÇÃO (Mantidos) ---
             if (prevWeekBtn) {
                 prevWeekBtn.addEventListener('click', () => {
                     dataAtual.setDate(dataAtual.getDate() - 7);

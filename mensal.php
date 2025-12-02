@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
 
     <style>
-        /* MANTIDO O ESTILO ORIGINAL PARA FICAR "ARRASTÁVEL" */
         .calendar-header {
             display: flex;
             justify-content: start;
@@ -21,10 +20,17 @@
 
         .calendar-header h2 {
             white-space: nowrap;
+            position: fixed;
+            position: absolute;
+            top: 50%;
         }
 
         .nav-buttons {
             display: flex;
+            position: fixed;
+            left: 93%;
+            position: absolute;
+            top: 50%;
         }
 
         .nav-arrow {
@@ -68,17 +74,35 @@
             margin-bottom: 0 !important;
         }
 
-        /* --- ESTILO DOS DIAS NÃO LETIVOS (VERMELHO) --- */
+        /* ------------------------------------------------ */
+        /* --- ESTILOS CORRIGIDOS PARA O NOVO REQUISITO --- */
+        /* ------------------------------------------------ */
+
+        /* --- ESTILO DOS DIAS NÃO LETIVOS (Fundo Cinza Claro, Texto Vermelho) --- */
         .dia-nao-letivo {
-            background-color: #ffebee;
-            /* Vermelho claro */
-            color: #d32f2f;
-            /* Vermelho escuro */
+            background-color: #EAEAEA !important; /* Cinza claro */
+            color: #D62828 !important; /* Texto em vermelho (#D62828) */
             text-align: center;
             vertical-align: middle;
             font-weight: bold;
             font-size: 0.9em;
-            border: 1px solid #ffcdd2;
+            border: 1px solid #D1D1D1; /* Borda mais clara */
+        }
+
+        /* --- ESTILO DOS FERIADOS (Fundo Cinza Claro, Texto Laranja) --- */
+        .dia-feriado {
+            background-color: #EAEAEA !important; /* Cinza claro (mesmo do dia não letivo) */
+            color: #F77F00 !important; /* Texto em laranja (#F77F00) */
+            text-align: center;
+            vertical-align: middle;
+            font-weight: bold;
+            font-size: 0.9em;
+            border: 1px solid #D1D1D1; /* Borda mais clara */
+        }
+
+        /* Garante que o texto dentro das células coloridas mantenha a cor definida acima */
+        .dia-nao-letivo p, .dia-feriado p {
+             color: inherit !important; 
         }
 
         /* Estilo básico caso não carregue o css externo */
@@ -324,17 +348,31 @@
 
                         const sessoesDoDia = agendamentos[dataString] || [];
 
-                        // [LÓGICA DO FERIADO]
-                        const eventoFeriado = sessoesDoDia.find(s => s.tipo_evento === 'nao_letivo');
+                        // [LÓGICA DOS DIAS NÃO LETIVOS E FERIADOS]
+                        const eventoNaoLetivo = sessoesDoDia.find(s => s.tipo_evento === 'nao_letivo');
                         const sessoesDaCelula = sessoesDoDia.filter(s => s.ambiente_id === ambiente.id);
 
-                        if (diaDaSemanaNum === 0) { // Domingo
-                            td.className = 'dia-nao-letivo';
+                        // 1. Verifica se é DOMINGO
+                        if (diaDaSemanaNum === 0) { 
+                            td.className = 'dia-nao-letivo'; // Usa a classe para DOMINGO (fundo cinza, texto vermelho)
                             td.textContent = 'Domingo';
-                        } else if (eventoFeriado) { // Feriado do Banco
-                            td.className = 'dia-nao-letivo'; // VERMELHO
-                            td.textContent = eventoFeriado.titulo || 'Dia não letivo';
-                            td.title = eventoFeriado.descricao || '';
+                            
+                        // 2. Verifica se é um Dia Não Letivo/Feriado cadastrado
+                        } else if (eventoNaoLetivo) { 
+                            const titulo = eventoNaoLetivo.titulo || 'Dia não letivo';
+                            const tipo = eventoNaoLetivo.tipo_feriado_dia_nao_letivo || ''; 
+
+                            // Lógica para diferenciar Feriado de Dia Não Letivo genérico
+                            if (tipo === 'Municipal' || tipo === 'Estadual' || tipo === 'Nacional' || titulo.toLowerCase().includes('feriado')) {
+                                td.className = 'dia-feriado'; // Feriado (fundo cinza, texto laranja)
+                            } else {
+                                td.className = 'dia-nao-letivo'; // Dia Não Letivo (fundo cinza, texto vermelho)
+                            }
+                            
+                            td.textContent = titulo;
+                            td.title = eventoNaoLetivo.descricao || '';
+                            
+                        // 3. Caso contrário, carrega agendamentos
                         } else {
                             td.innerHTML = criarSlotsAgendamento(sessoesDaCelula);
                         }
