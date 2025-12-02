@@ -34,8 +34,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 140px;
-            height: 140px;
+            width: 128px;
+            height: 128px;
             border-radius: 50%;
             text-decoration: none;
             color: white;
@@ -267,14 +267,14 @@
                                 <span>PDF</span>
                             </div>
                             <div id="btn-semestral-xls" class="modal-opcao-btn modal-btn-xls">
-                                <img src="./images/file.png" alt="XLS">
+                                <img src="./images/csv.png" alt="XLS">
                                 <span>XLS</span>
                             </div>
                         </div>
                         `,
                         showConfirmButton: false,
                         showCloseButton: true,
-                        width: '500px',
+                        width: '530px',
                         didOpen: () => {
                             // Botão PDF
                             document.getElementById('btn-semestral-pdf').addEventListener('click', () => {
