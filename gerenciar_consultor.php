@@ -39,8 +39,6 @@
         .bar-chart {
             margin-bottom: 25px;
         }
-
-        /* Removi os estilos de botão do modal (.modal-opcao-btn) que eu tinha adicionado antes */
     </style>
 </head>
 
@@ -244,7 +242,7 @@
                 }
             }
 
-            /* --- REQUISIÇÃO 3: TAXA DE OCUPAÇÃO (COM ROTAÇÃO DA SETA) --- */
+            /* --- REQUISIÇÃO 3: TAXA DE OCUPAÇÃO --- */
             async function carregarTaxaOcupacao() {
                 const elementoTaxa = document.getElementById('valor-taxa-ocupacao');
                 const gaugePath = document.getElementById('gauge-progress');
@@ -268,21 +266,17 @@
                     else if (data.valor !== undefined) valorFinal = data.valor;
                     else if (data.taxa_ocupacao !== undefined) valorFinal = data.taxa_ocupacao;
 
-                    // Garante limites entre 0 e 100
                     if (valorFinal > 100) valorFinal = 100;
                     if (valorFinal < 0) valorFinal = 0;
 
-                    // 1. Atualiza o texto
                     elementoTaxa.textContent = `${valorFinal}%`;
 
-                    // 2. Lógica do Arco Vermelho
                     const maxDash = 251.2;
                     const offset = maxDash - (maxDash * valorFinal / 100);
                     if (gaugePath) {
                         gaugePath.style.strokeDashoffset = offset;
                     }
 
-                    // 3. Lógica da Seta (Agulha)
                     const rotationAngle = (valorFinal / 100) * 180;
                     if (gaugeNeedle) {
                         gaugeNeedle.style.transform = `rotate(${rotationAngle}deg)`;
@@ -327,13 +321,70 @@
                 }
             }
 
-            // Executa as funções
+            // Executa as funções de carga de dados
             carregarTurmasIniciadas();
             carregarDocentesAtivos();
             carregarTaxaOcupacao();
             carregarGraficoSemanal();
 
-            /* --- OUTROS SCRIPTS (Menu) --- */
+            /* --- FUNÇÃO INTELIGENTE DE DOWNLOAD (PDF EM NOVA ABA) --- */
+            async function gerarRelatorio(endpoint, tipo) {
+                let janelaNova = null;
+
+                // Se for PDF, abrimos a aba IMEDIATAMENTE para o navegador não bloquear
+                if (tipo === 'pdf') {
+                    janelaNova = window.open('', '_blank');
+                    // Mensagem amigável enquanto carrega
+                    if (janelaNova) {
+                        janelaNova.document.write('<html><body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;"><h2>Gerando pré-visualização do PDF...</h2></body></html>');
+                    }
+                } else {
+                    // Se for CSV, mostramos loading no SweetAlert
+                    Swal.fire({
+                        title: 'Baixando CSV...',
+                        text: 'Aguarde um momento.',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+                }
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${TOKEN}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) throw new Error('Erro na requisição: ' + response.status);
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+
+                    if (tipo === 'pdf' && janelaNova) {
+                        // Redireciona a aba branca para o PDF carregado
+                        janelaNova.location.href = url;
+                    } else {
+                        // Download forçado para CSV
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'relatorio.csv';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                        Swal.close();
+                    }
+
+                } catch (error) {
+                    console.error('Erro no relatório:', error);
+                    if (janelaNova) janelaNova.close(); // Fecha a aba se deu erro
+                    Swal.fire('Erro', 'Não foi possível gerar o arquivo. Tente novamente.', 'error');
+                }
+            }
+
+            /* --- OUTROS SCRIPTS --- */
             const menuBtn = document.getElementById('menu-btn');
             const sidebar = document.getElementById('sidebar');
             if (menuBtn && sidebar) {
@@ -343,13 +394,11 @@
                 });
             }
 
-            /* --- SCRIPT DO MODAL (VISUAL ANTIGO, FUNCIONALIDADE NOVA) --- */
             const btnAbrirModal = document.getElementById('abrir-modal-relatorio');
             if (btnAbrirModal) {
                 btnAbrirModal.addEventListener('click', () => {
                     Swal.fire({
                         title: 'Gerar Relatórios',
-                        // HTML simplificado, sem as classes de botão
                         html: `
                         <div style="display: flex; justify-content: space-around; padding: 20px;">
                             <a href="#" id="btn-gerar-pdf" style="text-decoration: none; text-align: center;">
@@ -369,25 +418,21 @@
                             const btnPdf = document.getElementById('btn-gerar-pdf');
                             const btnXls = document.getElementById('btn-gerar-xls');
 
-                            // --- AÇÃO BOTÃO PDF (Abre em Nova Aba) ---
                             if (btnPdf) {
                                 btnPdf.addEventListener('click', function(event) {
                                     event.preventDefault();
-                                    const url = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api/gerar-pdf';
-                                    // Mantida a funcionalidade de abrir em nova aba
-                                    window.open(url, '_blank');
-                                    Swal.close();
+                                    Swal.close(); // Fecha o modal
+                                    // Chama a função passando 'pdf'
+                                    gerarRelatorio('http://10.141.117.34:8024/arthur-pereira/api_sga/api/gerar-pdf', 'pdf');
                                 });
                             }
 
-                            // --- AÇÃO BOTÃO CSV/XLS (Download Direto) ---
                             if (btnXls) {
                                 btnXls.addEventListener('click', function(event) {
                                     event.preventDefault();
-                                    const url = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api/gerar-csv';
-                                    // Mantida a funcionalidade de navegar para a URL
-                                    window.location.href = url;
-                                    Swal.close();
+                                    Swal.close(); // Fecha o modal
+                                    // Chama a função passando 'csv'
+                                    gerarRelatorio('http://10.141.117.34:8024/arthur-pereira/api_sga/api/gerar-csv', 'csv');
                                 });
                             }
                         }

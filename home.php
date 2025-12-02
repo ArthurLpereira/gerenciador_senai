@@ -20,8 +20,7 @@
             gap: 8px;
         }
 
-        /* --- CSS DO MODAL (ADICIONADO) --- */
-        /* Isso garante que os botões fiquem bonitos como na tela de relatórios */
+        /* --- CSS DO MODAL --- */
         .modal-opcoes-container {
             display: flex;
             justify-content: center;
@@ -43,6 +42,7 @@
             font-weight: bold;
             transition: transform 0.2s;
             font-family: Arial, sans-serif;
+            cursor: pointer;
         }
 
         .modal-opcao-btn:hover {
@@ -51,12 +51,10 @@
 
         .modal-btn-pdf {
             background-color: #e74c3c;
-            /* Vermelho PDF */
         }
 
         .modal-btn-xls {
             background-color: #27ae60;
-            /* Verde Excel */
         }
 
         .modal-opcao-btn img {
@@ -79,13 +77,48 @@
 
     <nav class="sidebar" id="sidebar">
         <ul>
-            <li><a href="./home.php"><img src="./images/calendar.png" alt="Ícone de perfil"><span class="menu-texto">Calendário<br></span></a></li>
-            <li><a href="./gerenciar.php"><img src="./images/profile.png" alt="Ícone de perfil"><span class="menu-texto">Gerenciar<br>Cadastros</span></a></li>
-            <li><a href="./validacao.php"><img src="./images/checked.png" alt="Ícone de check"><span class="menu-texto">Validação<br>de Turmas</span></a></li>
-            <li><a href="./ferramentas.php"><img src="./images/gear.png" alt="Ícone de engrenagem"><span class="menu-texto">Ferramentas<br>de Gestão</span></a></li>
-            <li><a href="./locacoes.php"><img src="./images/alocacao.png" alt="Ícone de alocação"><span class="menu-texto">Alterar<br>Alocações</span></a></li>
-            <li><a href="./relatorios.php"><img src="./images/report (1).png" alt="Ícone de relatório"><span class="menu-texto">Gerar<br>Relatórios</span></a></li>
-            <li><a href="./perfil.php"><img src="./images/account.png" alt="Ícone de conta"><span class="menu-texto">Meu<br>Perfil</span></a></li>
+            <li>
+                <a href="./home.php">
+                    <img src="./images/calendar.png" alt="Ícone de perfil">
+                    <span class="menu-texto">Calendário<br></span>
+                </a>
+            </li>
+            <li>
+                <a href="./gerenciar.php">
+                    <img src="./images/profile.png" alt="Ícone de perfil">
+                    <span class="menu-texto">Gerenciar<br>Cadastros</span>
+                </a>
+            </li>
+            <li>
+                <a href="./validacao.php">
+                    <img src="./images/checked.png" alt="Ícone de check">
+                    <span class="menu-texto">Validação<br>de Turmas</span>
+                </a>
+            </li>
+            <li>
+                <a href="./ferramentas.php">
+                    <img src="./images/gear.png" alt="Ícone de engrenagem">
+                    <span class="menu-texto">Ferramentas<br>de Gestão</span>
+                </a>
+            </li>
+            <li>
+                <a href="./locacoes.php">
+                    <img src="./images/alocacao.png" alt="Ícone de alocação">
+                    <span class="menu-texto">Alterar<br>Alocações</span>
+                </a>
+            </li>
+            <li>
+                <a href="./relatorios.php">
+                    <img src="./images/report (1).png" alt="Ícone de relatório">
+                    <span class="menu-texto">Gerar<br>Relatórios</span>
+                </a>
+            </li>
+            <li>
+                <a href="./perfil.php">
+                    <img src="./images/account.png" alt="Ícone de conta">
+                    <span class="menu-texto">Meu<br>Perfil</span>
+                </a>
+            </li>
         </ul>
     </nav>
 
@@ -138,7 +171,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURAÇÕES GLOBAIS ---
-            const API_BASE_URL = 'http://10.141.117.34:8024'; // Centralizei o IP aqui
+            const API_BASE_URL = 'http://10.141.117.34:8024';
             const API_URL = `${API_BASE_URL}/arthur-pereira/api_sga/api`;
 
             const TOKEN = localStorage.getItem('authToken');
@@ -150,11 +183,72 @@
                 return;
             }
 
+            // Headers Padrão
+            const AUTH_HEADERS = {
+                'Authorization': `Bearer ${TOKEN}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            };
+
             // Mensagem de boas-vindas
-            const user = JSON.parse(USER_STRING);
-            const welcomeMessage = document.getElementById('welcome-message');
-            if (welcomeMessage) {
-                welcomeMessage.textContent = `Seja bem-vindo(a), ${user.nome_colaborador}!`;
+            try {
+                const user = JSON.parse(USER_STRING);
+                const welcomeMessage = document.getElementById('welcome-message');
+                if (welcomeMessage) {
+                    welcomeMessage.textContent = `Seja bem-vindo(a), ${user.nome_colaborador || 'Usuário'}!`;
+                }
+            } catch (e) {
+                console.error("Erro ao ler dados do usuário", e);
+            }
+
+            // --- FUNÇÃO PARA DOWNLOAD SEGURO ---
+            async function downloadArquivoSeguro(endpoint, nomeArquivo) {
+                let janelaNova = null;
+
+                // Para PDF, abrimos a aba IMEDIATAMENTE
+                if (nomeArquivo.endsWith('.pdf')) {
+                    janelaNova = window.open('', '_blank');
+                    if (janelaNova) {
+                        janelaNova.document.write('<html><body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;"><h2>Gerando relatório...</h2></body></html>');
+                    }
+                } else {
+                    Swal.fire({
+                        title: 'Baixando...',
+                        text: 'Aguarde um momento.',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+                }
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: AUTH_HEADERS
+                    });
+
+                    if (!response.ok) throw new Error('Erro na requisição: ' + response.status);
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+
+                    if (nomeArquivo.endsWith('.pdf') && janelaNova) {
+                        janelaNova.location.href = url;
+                    } else {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = nomeArquivo;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                        Swal.close();
+                    }
+
+                } catch (error) {
+                    console.error('Erro no download:', error);
+                    if (janelaNova) janelaNova.close();
+                    Swal.fire('Erro', 'Não foi possível baixar o arquivo.', 'error');
+                }
             }
 
             // --- LÓGICA DO CARD SEMESTRAL (MODAL) ---
@@ -162,42 +256,36 @@
 
             if (cardSemestral) {
                 cardSemestral.addEventListener('click', function(event) {
-                    event.preventDefault(); // Impede o link padrão
+                    event.preventDefault();
 
                     Swal.fire({
-                        title: 'Gerar Relatório Semestral', // Título atualizado
+                        title: 'Gerar Relatório Semestral',
                         html: `
                         <div class="modal-opcoes-container">
-                            <a href="#" id="btn-semestral-pdf" class="modal-opcao-btn modal-btn-pdf">
+                            <div id="btn-semestral-pdf" class="modal-opcao-btn modal-btn-pdf">
                                 <img src="./images/pdf.png" alt="PDF">
                                 <span>PDF</span>
-                            </a>
-                            <a href="#" id="btn-semestral-xls" class="modal-opcao-btn modal-btn-xls">
+                            </div>
+                            <div id="btn-semestral-xls" class="modal-opcao-btn modal-btn-xls">
                                 <img src="./images/file.png" alt="XLS">
                                 <span>XLS</span>
-                            </a>
+                            </div>
                         </div>
                         `,
                         showConfirmButton: false,
                         showCloseButton: true,
                         width: '500px',
-                        // O didOpen garante que o JS encontre os botões dentro do modal criado
                         didOpen: () => {
                             // Botão PDF
-                            document.getElementById('btn-semestral-pdf').addEventListener('click', (e) => {
-                                e.preventDefault();
-                                // IMPORTANTE: Verifique se a rota da API é apenas /gerar-pdf ou se precisa de algo específico para semestral
-                                const urlPdf = `${API_URL}/gerar-pdf`;
-                                window.open(urlPdf, '_blank');
+                            document.getElementById('btn-semestral-pdf').addEventListener('click', () => {
                                 Swal.close();
+                                downloadArquivoSeguro(`${API_URL}/gerar-pdf`, 'relatorio_semestral.pdf');
                             });
 
                             // Botão XLS/CSV
-                            document.getElementById('btn-semestral-xls').addEventListener('click', (e) => {
-                                e.preventDefault();
-                                const urlXls = `${API_URL}/gerar-csv`;
-                                window.location.href = urlXls;
+                            document.getElementById('btn-semestral-xls').addEventListener('click', () => {
                                 Swal.close();
+                                downloadArquivoSeguro(`${API_URL}/gerar-csv`, 'relatorio_semestral.csv');
                             });
                         }
                     });
@@ -225,10 +313,7 @@
                         try {
                             await fetch(`${API_URL}/logout`, {
                                 method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${TOKEN}`,
-                                    'Accept': 'application/json',
-                                }
+                                headers: AUTH_HEADERS
                             });
                         } catch (error) {
                             console.error('Falha ao comunicar com a API de logout:', error);

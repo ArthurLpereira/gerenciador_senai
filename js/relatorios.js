@@ -1,11 +1,29 @@
 // CONTEÚDO COMPLETO DO ARQUIVO relatorios.js
 const apiBase = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api/';
 
+// --- BUSCA O TOKEN DO LOCALSTORAGE ---
+const TOKEN = localStorage.getItem('authToken');
+
+// Se não tiver token, não adianta tentar buscar dados
+if (!TOKEN) {
+    console.warn("Token não encontrado. Redirecionando ou parando execução...");
+    // window.location.href = './index.php'; // Opcional: Redirecionar se quiser
+}
+
+// Cabeçalho Padrão
+const headers = {
+    'Authorization': `Bearer ${TOKEN}`,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+};
+
 async function atualizarCardAmbientes() {
     const elementoNumero = document.getElementById('ambientes-disponiveis-numero');
     const elementoBarra = document.getElementById('ambientes-disponiveis-barra');
     try {
-        const response = await fetch(`${apiBase}ambientes/ambientes-disponiveis`);
+        // --- ADICIONADO HEADERS AQUI ---
+        const response = await fetch(`${apiBase}ambientes/ambientes-disponiveis`, { headers });
+
         if (!response.ok) {
             throw new Error('Falha ao buscar dados da API de ambientes.');
         }
@@ -29,12 +47,15 @@ async function atualizarCardAmbientes() {
 async function atualizarTaxaOcupacao() {
     const elementoTaxa = document.getElementById('taxa-ocupacao-valor');
     try {
-        const response = await fetch(`${apiBase}ambientes/taxa-ocupacao`);
+        // --- ADICIONADO HEADERS AQUI ---
+        const response = await fetch(`${apiBase}ambientes/taxa-ocupacao`, { headers });
+
         if (!response.ok) {
             throw new Error('Falha ao buscar dados da taxa de ocupação.');
         }
         const dados = await response.json();
-        const taxa = dados.taxa_ocupacao;
+        // Ajuste para pegar 'taxa' ou 'taxa_ocupacao' dependendo do seu backend
+        const taxa = dados.taxa ?? dados.taxa_ocupacao ?? 0;
         elementoTaxa.textContent = `${Math.round(taxa)}%`;
     } catch (error) {
         console.error('Falha ao atualizar o card de taxa de ocupação:', error);
@@ -46,18 +67,16 @@ async function atualizarColaboradoresAtivos() {
     const elementoColaboradores = document.getElementById('colaboradores-ativos-valor');
 
     try {
-        const response = await fetch(`${apiBase}colaboradores/colaboradores-ativos`);
+        // --- ADICIONADO HEADERS AQUI ---
+        const response = await fetch(`${apiBase}colaboradores/colaboradores-ativos`, { headers });
 
         if (!response.ok) {
             throw new Error('Falha ao buscar dados de colaboradores.');
         }
 
-        const dados = await response.json(); // dados agora é o objeto { quantidade: 5, colaboradores: [...] }
-
-        // CORREÇÃO: Acessamos a chave "quantidade" que a sua API realmente envia.
+        const dados = await response.json();
         const total = dados.quantidade;
 
-        // O resto do código funciona perfeitamente
         elementoColaboradores.textContent = total;
 
     } catch (error) {
@@ -78,51 +97,57 @@ const mapaDeCores = {
 };
 
 function gerarTomDeVermelhoAleatorio() {
-    const hue = Math.floor(Math.random() * 11); // Matiz em torno do vermelho
-    const saturation = Math.floor(Math.random() * 41) + 55; // Saturação de 55% a 95%
-    const lightness = Math.floor(Math.random() * 51) + 30; // Luminosidade de 30% a 80%
+    const hue = Math.floor(Math.random() * 11);
+    const saturation = Math.floor(Math.random() * 41) + 55;
+    const lightness = Math.floor(Math.random() * 51) + 30;
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 async function criarGraficoOcupacaoPorTipo() {
-    const ctx = document.getElementById('myChart').getContext('2d');
+    const canvas = document.getElementById('myChart');
+    if (!canvas) return; // Segurança caso o elemento não exista
+    const ctx = canvas.getContext('2d');
 
     try {
-        const response = await fetch(`${apiBase}ambientes/tipo-ambiente-taxa`);
+        // --- ADICIONADO HEADERS AQUI ---
+        const response = await fetch(`${apiBase}ambientes/tipo-ambiente-taxa`, { headers });
+
         if (!response.ok) { throw new Error('Falha ao buscar dados para o gráfico.'); }
 
         const dadosApi = await response.json();
 
-        const dadosDoGrafico = dadosApi.ocupacao_por_tipo;
-        const contagemInativos = dadosApi.visao_geral.total_ambientes_inativos;
-        const labels = Object.keys(dadosDoGrafico);
-        const dataPoints = Object.values(dadosDoGrafico).map(item => item.quantidade_neste_tipo);
+        // ADAPTAÇÃO PARA O FORMATO QUE SUA API RETORNA (LISTA SIMPLES)
+        // Se a API retornar uma lista [{tipo: 'Lab', taxa: 10}, ...], mapeamos direto.
+        let labels = [];
+        let dataPoints = [];
+        let backgroundColors = [];
 
-        if (contagemInativos > 0) {
-            labels.push('Inativos');
-            dataPoints.push(contagemInativos);
+        if (Array.isArray(dadosApi)) {
+            labels = dadosApi.map(d => d.tipo);
+            dataPoints = dadosApi.map(d => d.taxa);
+        } else if (dadosApi.ocupacao_por_tipo) {
+            // Mantém sua lógica antiga se a API retornar o objeto complexo
+            const dadosDoGrafico = dadosApi.ocupacao_por_tipo;
+            const contagemInativos = dadosApi.visao_geral?.total_ambientes_inativos || 0;
+            labels = Object.keys(dadosDoGrafico);
+            dataPoints = Object.values(dadosDoGrafico).map(item => item.quantidade_neste_tipo);
+            if (contagemInativos > 0) {
+                labels.push('Inativos');
+                dataPoints.push(contagemInativos);
+            }
         }
 
-        // --- LÓGICA DE CORES CORRIGIDA E FINAL ---
-
-        // Para cada 'label' que veio da API, verifica se ele já tem uma cor no nosso mapa.
+        // --- LÓGICA DE CORES ---
         labels.forEach(label => {
-            // Se o 'label' NÃO (!) estiver no mapaDeCores...
             if (!mapaDeCores[label]) {
-                // ...gera uma cor nova e a adiciona ao mapa.
                 mapaDeCores[label] = gerarTomDeVermelhoAleatorio();
             }
         });
+        backgroundColors = labels.map(label => mapaDeCores[label]);
+        const borderColors = backgroundColors;
 
-        // Agora que o mapa está completo, cria a lista de cores na ordem certa.
-        const backgroundColors = labels.map(label => mapaDeCores[label]);
-        const borderColors = backgroundColors; // Para cores sólidas, a borda pode ser a mesma.
-
-        // --- FIM DA LÓGICA DE CORES ---
-
-        // Cria o gráfico usando Chart.js
         new Chart(ctx, {
-            type: 'doughnut',
+            type: 'doughnut', // ou 'bar' se preferir barras como no outro exemplo
             data: {
                 labels: labels,
                 datasets: [{
