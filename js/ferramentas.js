@@ -53,7 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td data-filter-email>${user.email_colaborador}</td>
                 <td>
                     <div class="action-dropdown">
-                        <button class="action-btn">${nomeTipoAtual} <span class="arrow"></span></button>
+                        <button class="action-btn">
+                            ${nomeTipoAtual} 
+                            <i class="fas fa-caret-down dropdown-arrow"></i>
+                        </button>
                         <div class="dropdown-content">
                             ${dropdownOptions}
                         </div>
@@ -149,4 +152,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- INICIALIZAÇÃO ---
     carregarUsuarios();
 });
-

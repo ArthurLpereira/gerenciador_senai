@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ferramentas de Gestão - SGA SENAI</title>
     <link rel="stylesheet" href="./css/ferramentas.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
@@ -47,6 +50,34 @@
         .action-dropdown .dropdown-content button:hover {
             background-color: #f1f1f1;
         }
+
+        /* ----------------------------------------------------- */
+        /* 🌟 NOVIDADE: ESTILOS PARA O NOVO ÍCONE DE SETA */
+        /* ----------------------------------------------------- */
+        
+        /* Otimiza a distribuição dentro do botão */
+        .action-btn {
+            justify-content: space-between; 
+        }
+
+        /* Esconde as setas antigas baseadas em CSS (triângulo de borda) */
+        .action-btn .arrow {
+            display: none !important; 
+        }
+
+        /* Estiliza o novo ícone do Font Awesome */
+        .dropdown-arrow {
+            margin-left: 10px; /* Espaçamento */
+            font-size: 16px; 
+            color: inherit;
+            transition: transform 0.2s ease;
+        }
+
+        /* Rotação do ícone quando o dropdown estiver aberto */
+        .action-dropdown.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
     </style>
 </head>
 
@@ -107,7 +138,6 @@
                         </tr>
                     </thead>
                     <tbody id="user-table-body">
-                        <!-- As linhas da tabela serão inseridas aqui pelo JavaScript -->
                         <tr>
                             <td colspan="4" style="text-align:center;">Carregando usuários...</td>
                         </tr>
@@ -117,9 +147,7 @@
         </div>
     </main>
 
-    <script src="./js/script.js"></script> <!-- Script Geral (menu, logout) -->
-    <script src="./js/ferramentas.js"></script> <!-- Script Específico desta página -->
-    <script>
+    <script src="./js/script.js"></script> <script src="./js/ferramentas.js"></script> <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- CONFIGURAÇÕES GLOBAIS ---
             const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
