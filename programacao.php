@@ -21,10 +21,17 @@
 
         .calendar-header h2 {
             white-space: nowrap;
+            position: fixed;
+            position: absolute;
+            top: 50%;
         }
 
         .nav-buttons {
             display: flex;
+            position: fixed;
+            left: 93%;  
+            position: absolute;
+            top: 50%;
         }
 
         .nav-arrow {

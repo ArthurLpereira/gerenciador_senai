@@ -20,6 +20,7 @@
             text-decoration: none;
             color: inherit;
             gap: 8px;
+            margin-right: 12px;
         }
 
         .card-grid {

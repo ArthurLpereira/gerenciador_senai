@@ -28,7 +28,7 @@
         .nav-buttons {
             display: flex;
             position: fixed;
-            left: 93%;
+            left: 93%;  
             position: absolute;
             top: 50%;
         }
