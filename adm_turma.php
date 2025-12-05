@@ -51,7 +51,8 @@
         .close:focus {
             color: black;
         }
-        .modal-header{
+
+        .modal-header {
             display: flex;
             flex-direction: column;
             border: none;
@@ -150,16 +151,23 @@
         <div class="modal-content">
             <span class="close" data-modal="modalEditar">&times;</span>
             <div class="modal-header">
-                <h2>Editar Nome da Turma</h2>
-                <p>Altere o nome da turma selecionada.</p>
+                <h2>Editar Turma</h2>
+                <p>Altere os dados da turma selecionada.</p>
             </div>
             <div class="modal-body">
                 <form id="formEditar">
                     <input type="hidden" id="edit_turma_id" name="id">
+
                     <div class="form-group">
                         <label for="edit_nome_turma">Nome da Turma:</label>
                         <input type="text" id="edit_nome_turma" name="nome_turma" placeholder="Nome da turma" required>
                     </div>
+
+                    <div class="form-group">
+                        <label for="edit_capacidade_atual">Capacidade Atual:</label>
+                        <input type="number" id="edit_capacidade_atual" name="capacidade_atual" placeholder="Quantidade atual de alunos">
+                    </div>
+
                     <button type="submit" class="submit-button">Salvar Edição</button>
                 </form>
             </div>

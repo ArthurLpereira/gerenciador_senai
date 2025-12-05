@@ -42,7 +42,6 @@
         <img class="logo_senai" src="./images/logo_senai.png" alt="Logo SENAI">
     </header>
     <nav class="sidebar" id="sidebar">
-        <!-- Seu menu lateral aqui -->
         <ul>
             <li><a href="./home.php"><img src="./images/calendar.png" alt="Ícone"> <span class="menu-texto">Calendário</span></a></li>
             <li><a href="./gerenciar.php"><img src="./images/profile.png" alt="Ícone"> <span class="menu-texto">Gerenciar Cadastros</span></a></li>
@@ -79,10 +78,8 @@
             </div>
         </div>
         <div class="conteudo_docente" id="lista-turmas">
-            <!-- Os cards das turmas serão inseridos aqui -->
         </div>
     </main>
-    <!-- Modal Criar Turma -->
     <div id="modalCriar" class="modal">
         <div class="modal-content">
             <span class="close" data-modal-id="modalCriar"><i class="bi bi-x-circle"></i></span>
@@ -95,14 +92,14 @@
                         <div class="form-group"><label for="data_inicio_turma">Data de Início</label><input type="date" id="data_inicio_turma" required></div>
                         <div class="form-group"><label for="turno_id">Turno</label><select id="turno_id" required></select></div>
                         <div class="form-group"><label for="minuto_aula_id">Duração da Aula</label><select id="minuto_aula_id" required></select></div>
-                        <!-- CAMPO DE STATUS ADICIONADO -->
                         <div class="form-group"><label for="status_turma_id">Status</label><select id="status_turma_id" required></select></div>
                     </div>
                     <div class="form-column">
                         <div class="form-group"><label for="nome_turma">Nome da Turma</label><input type="text" id="nome_turma" placeholder="Ex: DEV-2025-1" required></div>
                         <div class="form-group"><label for="colaborador_id">Docente</label><select id="colaborador_id" required></select></div>
                         <div class="form-group"><label for="data_termino_turma">Data de Término</label><input type="date" id="data_termino_turma"></div>
-                        <div class="form-group"><label for="capacidade_turma">Capacidade</label><input type="number" id="capacidade_turma" placeholder="Nº de alunos" required></div>
+                        <div class="form-group"><label for="capacidade_turma">Capacidade Total</label><input type="number" id="capacidade_turma" placeholder="Nº de alunos totais" required></div>
+                        <div class="form-group"><label for="capacidade_atual">Capacidade Atual</label><input type="number" id="capacidade_atual" placeholder="Nº de alunos atuais"></div>
                         <div class="form-group">
                             <label>Dias da Semana</label>
                             <div class="radio-group" id="dias_semana_criar">
@@ -121,7 +118,6 @@
             </form>
         </div>
     </div>
-    <!-- Modal Editar Turma -->
     <div id="modalEditar" class="modal">
         <div class="modal-content">
             <span class="close" data-modal-id="modalEditar"><i class="bi bi-x-circle"></i></span>
@@ -135,14 +131,14 @@
                         <div class="form-group"><label for="edit_data_inicio_turma">Data de Início</label><input type="date" id="edit_data_inicio_turma" required></div>
                         <div class="form-group"><label for="edit_turno_id">Turno</label><select id="edit_turno_id" required></select></div>
                         <div class="form-group"><label for="edit_minuto_aula_id">Duração da Aula</label><select id="edit_minuto_aula_id" required></select></div>
-                        <!-- CAMPO DE STATUS ADICIONADO -->
                         <div class="form-group"><label for="edit_status_turma_id">Status</label><select id="edit_status_turma_id" required></select></div>
                     </div>
                     <div class="form-column">
                         <div class="form-group"><label for="edit_nome_turma">Nome da Turma</label><input type="text" id="edit_nome_turma" required></div>
                         <div class="form-group"><label for="edit_colaborador_id">Docente</label><select id="edit_colaborador_id" required></select></div>
                         <div class="form-group"><label for="edit_data_termino_turma">Data de Término</label><input type="date" id="edit_data_termino_turma"></div>
-                        <div class="form-group"><label for="edit_capacidade_turma">Capacidade</label><input type="number" id="edit_capacidade_turma" required></div>
+                        <div class="form-group"><label for="edit_capacidade_turma">Capacidade Total</label><input type="number" id="edit_capacidade_turma" required></div>
+                        <div class="form-group"><label for="edit_capacidade_atual">Capacidade Atual</label><input type="number" id="edit_capacidade_atual" placeholder="Nº de alunos atuais"></div>
                         <div class="form-group">
                             <label>Dias da Semana</label>
                             <div class="radio-group" id="dias_semana_editar">
@@ -161,69 +157,8 @@
             </form>
         </div>
     </div>
-    <script src="./js/script.js"></script>
+
     <script src="./js/validacao.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- CONFIGURAÇÕES GLOBAIS ---
-            const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
-            const TOKEN = localStorage.getItem('authToken');
-
-            // --- PROTEÇÃO DE PÁGINA ---
-            if (!TOKEN) {
-                window.location.href = './index.php'; // Altere para o nome da sua tela de login
-                return;
-            }
-
-            // --- LÓGICA DO MENU LATERAL (SIDEBAR) ---
-            const menuBtn = document.getElementById('menu-btn');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('conteudo-cadastro');
-            if (menuBtn && sidebar && mainContent) {
-                menuBtn.addEventListener('click', () => {
-                    menuBtn.classList.toggle('active');
-                    sidebar.classList.toggle('active');
-                    mainContent.classList.toggle('push'); // Use a classe correta se for diferente
-                });
-            }
-
-            // --- LÓGICA DO BOTÃO DE LOGOUT ---
-            const logoutButton = document.getElementById('logout-button');
-            if (logoutButton) {
-                logoutButton.addEventListener('click', async (event) => {
-                    event.preventDefault();
-                    const result = await Swal.fire({
-                        title: 'Você tem certeza?',
-                        text: "Sua sessão será encerrada com segurança.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Sim, quero sair!',
-                        cancelButtonText: 'Cancelar'
-                    });
-
-                    if (result.isConfirmed) {
-                        try {
-                            await fetch(`${API_URL}/logout`, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${TOKEN}`,
-                                    'Accept': 'application/json',
-                                }
-                            });
-                        } catch (error) {
-                            console.error('Falha ao comunicar com a API de logout:', error);
-                        } finally {
-                            localStorage.removeItem('authToken');
-                            localStorage.removeItem('user');
-                            window.location.href = './index.php'; // Altere para o nome da sua tela de login
-                        }
-                    }
-                });
-            }
-        });
-    </script>
 </body>
 
 </html>

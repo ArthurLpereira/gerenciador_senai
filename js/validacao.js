@@ -1,11 +1,68 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURAÇÕES GLOBAIS ---
     const API_URL = 'http://10.141.117.34:8024/arthur-pereira/api_sga/api';
+
+    // 1. RECUPERA O TOKEN
     const TOKEN = localStorage.getItem('authToken');
+
+    // 2. VERIFICA SE EXISTE (Proteção de Rota)
+    if (!TOKEN) {
+        window.location.href = './index.php';
+        return;
+    }
+
+    // 3. CRIA O HEADER PADRÃO COM O BEARER TOKEN
     const AUTH_HEADERS = {
         'Authorization': `Bearer ${TOKEN}`,
-        'Content-Type': 'application/json', 'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
     };
+
+    // --- LÓGICA DO MENU LATERAL (SIDEBAR) ---
+    const menuBtn = document.getElementById('menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('conteudo-cadastro');
+    if (menuBtn && sidebar && mainContent) {
+        menuBtn.addEventListener('click', () => {
+            menuBtn.classList.toggle('active');
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('push');
+        });
+    }
+
+    // --- LÓGICA DO BOTÃO DE LOGOUT ---
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const result = await Swal.fire({
+                title: 'Você tem certeza?',
+                text: "Sua sessão será encerrada com segurança.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sim, quero sair!',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    // Envia o token no Logout também
+                    await fetch(`${API_URL}/logout`, {
+                        method: 'POST',
+                        headers: AUTH_HEADERS
+                    });
+                } catch (error) {
+                    console.error('Falha ao comunicar com a API de logout:', error);
+                } finally {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('user');
+                    window.location.href = './index.php';
+                }
+            }
+        });
+    }
 
     // --- SELETORES DE ELEMENTOS ---
     const listaTurmas = document.getElementById('lista-turmas');
@@ -31,28 +88,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const turno = turma.turno?.nome_turno ?? 'N/A'
         const dataFormatadaInicio = new Date(turma.data_inicio_turma + 'T00:00:00').toLocaleDateString('pt-BR');
         const dataFormatadaTermino = new Date(turma.data_termino_turma + 'T00:00:00').toLocaleDateString('pt-BR');
-        // Acho que podemos tirar o status dessa div, pois já tem o botão
+        const Capacidade = turma?.capacidade_turma;
+        const CapacidadeAtual = turma?.capacidade_atual ?? 0;
         return `
-            <div class="info_docente" data-id="${turma.id}">
-                <div class="conteudo">
-                    <p class="nome"><b>${turma.nome_turma}</b> (${cursoNome})</p>
-                    <p><i class="bi bi-calendar-event"></i> Início: ${dataFormatadaInicio}</p>
-                    <p><i class="bi bi-calendar-event"></i> Término: ${dataFormatadaTermino}</p>
-                    <p><i class="bi bi-geo-alt-fill"></i> Ambiente: ${ambienteNome}</p>
-                    <p><i class="bi bi-geo-alt-fill"></i> Turno: ${turno}</p>
-                    <p><i class="bi bi-person-check-fill"></i> Status: ${statusText}</p>
+                <div class="info_docente" data-id="${turma.id}">
+                    <div class="conteudo">
+                        <p class="nome"><b>${turma.nome_turma}</b> (${cursoNome})</p>
+                        <p><i class="bi bi-calendar-event"></i> Início: ${dataFormatadaInicio}</p>
+                        <p><i class="bi bi-calendar-event"></i> Término: ${dataFormatadaTermino}</p>
+                        <p><i class="bi bi-geo-alt-fill"></i> Ambiente: ${ambienteNome}</p>
+                        <p><i class="bi bi-geo-alt-fill"></i> Capacidade Máxima: ${Capacidade}</p>
+                        <p><i class="bi bi-geo-alt-fill"></i> Capacidade Atual: ${CapacidadeAtual}</p>
+                        <p><i class="bi bi-geo-alt-fill"></i> Turno: ${turno}</p>
+                        <p><i class="bi bi-person-check-fill"></i> Status: ${statusText}</p>
+                    </div>
+                    <div class="funcoes">
+                        <button class="editar_docente" data-id="${turma.id}"><i class="bi bi-pen-fill"></i> Editar</button>
+                        <button class="status_docente ${statusClass}" data-id="${turma.id}">${statusText}</button>
+                    </div>
                 </div>
-                <div class="funcoes">
-                    <button class="editar_docente" data-id="${turma.id}"><i class="bi bi-pen-fill"></i> Editar</button>
-                    <button class="status_docente ${statusClass}" data-id="${turma.id}">${statusText}</button>
-                </div>
-            </div>
-        `;
+            `;
     }
 
     async function carregarTurmas() {
         try {
-            const response = await fetch(`${API_URL}/turmas`, { headers: AUTH_HEADERS });
+            // Passa o Header com Token
+            const response = await fetch(`${API_URL}/turmas`, {
+                headers: AUTH_HEADERS
+            });
             if (!response.ok) throw new Error('Falha ao carregar turmas.');
             const data = await response.json();
             const turmas = data.data || data;
@@ -62,13 +125,19 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 listaTurmas.innerHTML = '<p>Nenhuma turma encontrada.</p>';
             }
-        } catch (error) { showError('Não foi possível carregar as turmas.'); console.error(error); }
+        } catch (error) {
+            showError('Não foi possível carregar as turmas.');
+            console.error(error);
+        }
     }
 
     async function popularSelect(selectId, endpoint, textField, valueField = 'id') {
         const select = document.getElementById(selectId);
         try {
-            const response = await fetch(`${API_URL}/${endpoint}`, { headers: AUTH_HEADERS });
+            // Passa o Header com Token
+            const response = await fetch(`${API_URL}/${endpoint}`, {
+                headers: AUTH_HEADERS
+            });
             if (!response.ok) throw new Error(`Falha ao carregar ${endpoint}.`);
             const data = await response.json();
             const items = data.data || data;
@@ -76,7 +145,9 @@ document.addEventListener('DOMContentLoaded', () => {
             items.forEach(item => {
                 select.innerHTML += `<option value="${item[valueField]}">${item[textField]}</option>`;
             });
-        } catch (error) { console.error(error); }
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     // --- EVENT LISTENERS ---
@@ -98,13 +169,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // =========================================================================
-    //               BLOCO DE CÓDIGO CORRIGIDO PARA CRIAR TURMA
+    //              CRIAR TURMA (COM TOKEN)
     // =========================================================================
     formCriar.addEventListener('submit', async (e) => {
         e.preventDefault();
         const diasSelecionados = Array.from(document.querySelectorAll('#dias_semana_criar input:checked')).map(cb => cb.value);
 
-        // CORREÇÃO FINAL DO PAYLOAD
         const payload = {
             nome_turma: document.getElementById('nome_turma').value,
             curso_id: document.getElementById('curso_id').value,
@@ -114,21 +184,26 @@ document.addEventListener('DOMContentLoaded', () => {
             turno_id: document.getElementById('turno_id').value,
             minuto_aula_id: document.getElementById('minuto_aula_id').value,
             capacidade_turma: document.getElementById('capacidade_turma').value,
+            capacidade_atual: document.getElementById('capacidade_atual').value,
             status_turma_id: document.getElementById('status_turma_id').value,
-
-            // As chaves agora correspondem EXATAMENTE ao que o backend espera.
             colaboradores_ids: [document.getElementById('colaborador_id').value],
             dias_da_semana_ids: diasSelecionados
         };
 
         try {
-            const response = await fetch(`${API_URL}/turmas`, { method: 'POST', headers: AUTH_HEADERS, body: JSON.stringify(payload) });
+            const response = await fetch(`${API_URL}/turmas`, {
+                method: 'POST',
+                headers: AUTH_HEADERS, // Token Aqui 
+                body: JSON.stringify(payload)
+            });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Erro ao criar turma.');
             showSuccess('Turma criada com sucesso!');
             modalCriar.style.display = 'none';
             carregarTurmas();
-        } catch (error) { showError(error.message); }
+        } catch (error) {
+            showError(error.message);
+        }
     });
 
     listaTurmas.addEventListener('click', async (e) => {
@@ -145,7 +220,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     popularSelect('edit_status_turma_id', 'status-turmas', 'nome_status_turma')
                 ]);
 
-                const response = await fetch(`${API_URL}/turmas/${turmaId}`, { headers: AUTH_HEADERS });
+                // Passa o Header com Token
+                const response = await fetch(`${API_URL}/turmas/${turmaId}`, {
+                    headers: AUTH_HEADERS
+                });
                 if (!response.ok) throw new Error('Falha ao buscar dados da turma.');
                 const data = await response.json();
                 const turma = data.data || data;
@@ -155,6 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('edit_curso_id').value = turma.curso_id;
                 document.getElementById('edit_ambiente_id').value = turma.ambiente_id;
                 document.getElementById('edit_capacidade_turma').value = turma.capacidade_turma;
+
+                // --- PREENCHE A NOVA COLUNA NO EDITAR ---
+                document.getElementById('edit_capacidade_atual').value = turma.capacidade_atual;
+
                 document.getElementById('edit_data_inicio_turma').value = turma.data_inicio_turma;
                 document.getElementById('edit_data_termino_turma').value = turma.data_termino_turma;
                 document.getElementById('edit_turno_id').value = turma.turno_id;
@@ -175,19 +257,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 modalEditar.style.display = 'block';
-            } catch (error) { showError(error.message); }
+            } catch (error) {
+                showError(error.message);
+            }
         }
     });
 
     // =========================================================================
-    //               BLOCO DE CÓDIGO CORRIGIDO PARA EDITAR TURMA
+    //              EDITAR TURMA (COM TOKEN)
     // =========================================================================
     formEditar.addEventListener('submit', async (e) => {
         e.preventDefault();
         const turmaId = document.getElementById('edit_turma_id').value;
         const diasSelecionados = Array.from(document.querySelectorAll('#dias_semana_editar input:checked')).map(cb => cb.value);
 
-        // CORREÇÃO FINAL DO PAYLOAD
         const payload = {
             nome_turma: document.getElementById('edit_nome_turma').value,
             curso_id: document.getElementById('edit_curso_id').value,
@@ -197,24 +280,32 @@ document.addEventListener('DOMContentLoaded', () => {
             turno_id: document.getElementById('edit_turno_id').value,
             minuto_aula_id: document.getElementById('edit_minuto_aula_id').value,
             capacidade_turma: document.getElementById('edit_capacidade_turma').value,
-            status_turma_id: document.getElementById('edit_status_turma_id').value,
 
-            // As chaves agora correspondem EXATAMENTE ao que o backend espera.
+            // --- ENVIA A NOVA COLUNA NA EDIÇÃO ---
+            capacidade_atual: document.getElementById('edit_capacidade_atual').value,
+
+            status_turma_id: document.getElementById('edit_status_turma_id').value,
             colaboradores_ids: [document.getElementById('edit_colaborador_id').value],
             dias_da_semana_ids: diasSelecionados
         };
 
         try {
-            const response = await fetch(`${API_URL}/turmas/${turmaId}`, { method: 'PUT', headers: AUTH_HEADERS, body: JSON.stringify(payload) });
+            const response = await fetch(`${API_URL}/turmas/${turmaId}`, {
+                method: 'PUT',
+                headers: AUTH_HEADERS, // Token Aqui
+                body: JSON.stringify(payload)
+            });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Erro ao editar turma.');
             showSuccess('Turma atualizada com sucesso!');
             modalEditar.style.display = 'none';
             carregarTurmas();
-        } catch (error) { showError(error.message); }
+        } catch (error) {
+            showError(error.message);
+        }
     });
 
-    // --- LÓGICA DE PESQUISA ADICIONADA ---
+    // --- LÓGICA DE PESQUISA ---
     searchInput.addEventListener('keyup', (e) => {
         const searchTerm = e.target.value.toLowerCase();
         document.querySelectorAll('#lista-turmas .info_docente').forEach(card => {

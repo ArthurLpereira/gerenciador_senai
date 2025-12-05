@@ -1,5 +1,3 @@
-// Ficheiro: ./js/adm_turma.js
-
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- CONFIGURAÇÕES GLOBAIS ---
@@ -25,10 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalEditar = document.getElementById('modalEditar');
     const fecharModalBtns = document.querySelectorAll('.close');
     const formEditar = document.getElementById('formEditar');
-
-    // =========================================================
-    //                 NOVO SELETOR ADICIONADO
-    // =========================================================
     const searchInput = document.getElementById('searchInput');
 
     // --- FUNÇÕES AUXILIARES ---
@@ -38,37 +32,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- FUNÇÕES DE LÓGICA PRINCIPAL ---
 
     function criarCardTurma(turma) {
-        // Seus dados existentes
         const statusText = turma.status_turma?.nome_status_turma ?? 'Indefinido';
         const cursoNome = turma.curso?.nome_curso ?? 'N/A';
         const ambienteNome = turma.ambiente?.nome_ambiente ?? 'N/A';
+        const quantidade_turma = turma.capacidade_turma ?? '0';
+        const quantidade_atual = turma.capacidade_atual ?? '0';
         const dataFormatadaInicio = new Date(turma.data_inicio_turma + 'T00:00:00').toLocaleDateString('pt-BR');
         const dataFormatadaTermino = new Date(turma.data_termino_turma + 'T00:00:00').toLocaleDateString('pt-BR');
 
-        // --- Início da nova lógica ---
-        let diasDaSemanaTexto = 'Dias não definidos'; // Texto padrão
+        let diasDaSemanaTexto = 'Dias não definidos';
 
-        // O JSON confirma que 'turma.dias_da_semana' é o array correto
         if (turma.dias_da_semana && turma.dias_da_semana.length > 0) {
-
-            // O JSON confirma que 'dia.nome_dia_da_semana' é a propriedade correta
             diasDaSemanaTexto = turma.dias_da_semana
                 .map(dia => dia.nome_dia_da_semana)
                 .join(', ');
         }
-        // --- Fim da nova lógica ---
 
-        // HTML do card com a nova linha
         return `
         <div class="info_docente" data-id="${turma.id}">
             <div class="conteudo">
                 <p class="nome"><b>Turma: </b> ${turma.nome_turma} (${cursoNome})</p>
                 <p><i class="bi bi-calendar-event"></i> Início: ${dataFormatadaInicio}</p>
                 <p><i class="bi bi-calendar-event-fill"></i> Término: ${dataFormatadaTermino}</p>
+                <p><i class="bi bi-calendar-event-fill"></i> Quantidade Máxima: ${quantidade_turma}</p>
+                <p><i class="bi bi-calendar-event-fill"></i> Quantidade Atual: ${quantidade_atual}</p>
                 <p><i class="bi bi-geo-alt-fill"></i> Ambiente: ${ambienteNome}</p>
-                
                 <p><i class="bi bi-calendar-week-fill"></i> Dias: ${diasDaSemanaTexto}</p> 
-
                 <p><i class="bi bi-person-check-fill"></i> Status: ${statusText}</p>
             </div>
             <div class="funcoes">
@@ -79,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function carregarTurmas() {
-        // ... (código da função carregarTurmas igual ao anterior)
         if (!listaTurmas) {
             console.error("Erro Crítico: O elemento com ID 'lista-turmas' não foi encontrado no HTML.");
             showError("Erro de configuração da página. Contacte o administrador.");
@@ -120,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Abrir e popular modal de edição
     listaTurmas.addEventListener('click', async (e) => {
-        // ... (código do listener do listaTurmas igual ao anterior)
         const editBtn = e.target.closest('.editar_docente');
         if (editBtn) {
             const turmaId = editBtn.dataset.id;
@@ -129,8 +116,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error('Falha ao buscar dados da turma.');
                 const data = await response.json();
                 const turma = data.data || data;
+
                 document.getElementById('edit_turma_id').value = turma.id;
                 document.getElementById('edit_nome_turma').value = turma.nome_turma;
+
+                // --- NOVO: PREENCHE A CAPACIDADE ATUAL ---
+                document.getElementById('edit_capacidade_atual').value = turma.capacidade_atual;
+
                 modalEditar.style.display = 'block';
             } catch (error) {
                 showError(error.message || 'Erro ao carregar dados da turma.');
@@ -141,12 +133,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Enviar formulário de edição
     formEditar.addEventListener('submit', async (e) => {
-        // ... (código do listener do formEditar igual ao anterior)
         e.preventDefault();
         const turmaId = document.getElementById('edit_turma_id').value;
+
         const payload = {
             nome_turma: document.getElementById('edit_nome_turma').value,
+            // --- NOVO: ENVIA A CAPACIDADE ATUAL ---
+            capacidade_atual: document.getElementById('edit_capacidade_atual').value
         };
+
         try {
             const response = await fetch(`${API_URL}/turmas/${turmaId}`, {
                 method: 'PUT',
@@ -164,31 +159,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // =========================================================
-    //                 NOVO LISTENER ADICIONADO
-    // =========================================================
-    /**
-     * Event listener para a BARRA DE PESQUISA.
-     * Filtra os cards em tempo real (client-side) conforme o usuário digita.
-     */
+    // Barra de Pesquisa
     searchInput.addEventListener('keyup', () => {
-        // Pega o valor digitado, em minúsculas
         const searchTerm = searchInput.value.toLowerCase();
-
-        // Pega todos os cards que estão na lista
         const cards = document.querySelectorAll('#lista-turmas .info_docente');
-
-        // Passa por cada card
         cards.forEach(card => {
-            // Pega o texto do nome da turma (que está na classe ".nome")
             const nomeTexto = card.querySelector('.nome').textContent.toLowerCase();
-
-            // Verifica se o texto do card inclui o texto digitado
             if (nomeTexto.includes(searchTerm)) {
-                // Se sim, mostra o card
-                card.style.display = ''; // Reverte para o display padrão (flex, block, etc)
+                card.style.display = '';
             } else {
-                // Se não, esconde o card
                 card.style.display = 'none';
             }
         });
